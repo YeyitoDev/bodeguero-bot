@@ -24,12 +24,12 @@ def _one(query, chunks=None, **kw):
 def test_spoken_size_and_section_heading_find_the_right_line():
     product = _one("gaseosa litro y medio")
     assert product.name == "Inca Kola 1.5 litros"
-    assert reply(Intent.PRICE, product) == "Inca Kola 1.5 litros: S/ 6.50."
+    assert reply(Intent.PRICE, product) == "Inca Kola 1.5 litros: S/ 6.50"
 
 
 def test_stock_reply_keeps_the_note_after_the_stock():
     assert reply(Intent.STOCK, _one("cerveza Pilsen")) == (
-        "Cerveza Pilsen Callao 630 ml: te quedan 30 botellas. Se cobra S/ 1.00 sin envase."
+        "Cerveza Pilsen Callao 630 ml: te quedan 30 botellas · Se cobra S/ 1.00 sin envase."
     )
 
 
@@ -40,7 +40,7 @@ def test_unknown_brand_is_not_answered_with_another_brand():
 
 def test_price_per_unit_is_kept():
     chunks = _chunks("Huevos a granel: precio de venta S/ 0.60 la unidad. Stock actual: 180 huevos.")
-    assert reply(Intent.PRICE, _one("huevo", chunks)) == "Huevos a granel: S/ 0.60 la unidad."
+    assert reply(Intent.PRICE, _one("huevo", chunks)) == "Huevos a granel: S/ 0.60 la unidad"
 
 
 def test_unknown_size_is_not_answered_with_another_size():
@@ -55,7 +55,7 @@ def test_a_category_or_a_brand_without_size_gives_every_matching_line():
 
 def test_inventory_line_has_price_and_stock():
     assert [reply(Intent.INVENTORY, p) for p in products(_chunks())] == [
-        "Inca Kola 500 ml: S/ 2.50, quedan 36 unidades.",
-        "Inca Kola 1.5 litros: S/ 6.50, quedan 12 unidades.",
-        "Cerveza Pilsen Callao 630 ml: S/ 6.00, quedan 30 botellas.",
+        "Inca Kola 500 ml: S/ 2.50 · 36 unidades",
+        "Inca Kola 1.5 litros: S/ 6.50 · 12 unidades",
+        "Cerveza Pilsen Callao 630 ml: S/ 6.00 · 30 botellas",
     ]

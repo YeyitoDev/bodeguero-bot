@@ -8,5 +8,5 @@
 {"question": "¿Cada cuánto debo cobrar el fiado?", "expected_source": "consejos/fiado.md", "must_contain": "quincena", "intent": "consejo"}
 {"question": "Dame un consejo para vender más gaseosas en verano", "expected_source": "consejos/negocio.md", "must_contain": "heladas", "intent": "consejo"}
 {"question": "¿Tengo gaseosa de litro y medio?", "expected_source": "catalogo/bebidas.md", "must_contain": "1.5", "intent": "stock"}
-{"question": "Dame un listado de mi inventario", "expected_source": "catalogo/bebidas.md", "must_contain": "Coca-Cola 500 ml: S/ 2.50, quedan 24 unidades.", "intent": "inventario"}
-{"question": "Stock de gaseosas", "expected_source": "catalogo/bebidas.md", "must_contain": "Coca-Cola 500 ml: te quedan 24 unidades.", "intent": "stock"}
+{"question": "Dame un listado de mi inventario", "expected_source": "catalogo/bebidas.md", "must_contain": "Coca-Cola 500 ml: S/ 2.50 · 24 unidades", "intent": "inventario"}
+{"question": "Stock de gaseosas", "expected_source": "catalogo/bebidas.md", "must_contain": "Coca-Cola 500 ml: te quedan 24 unidades", "intent": "stock"}

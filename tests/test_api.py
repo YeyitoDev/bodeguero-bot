@@ -51,7 +51,7 @@ def test_webhook_answers_through_messenger_port(settings, container):
     assert resp.status_code == 200
     chat_id, reply = container.messenger.sent[-1]
     assert chat_id == 42
-    assert "4.80" in reply and "Fuentes:" in reply
+    assert reply == "<b>Arroz Costeño 1 kg</b>: S/ 4.80"
 
 
 def test_webhook_ignores_non_text_updates(settings, container):
@@ -59,3 +59,19 @@ def test_webhook_ignores_non_text_updates(settings, container):
     with _client(settings, container) as client:
         resp = client.post("/telegram/webhook", json=payload, headers=SECRET)
     assert resp.json()["ignored"] == "no text"
+
+
+def test_to_html_bolds_names_and_headings_escapes_and_drops_markers():
+    from bodeguero.adapters.inbound.telegram_webhook import to_html
+
+    text = "Gaseosas:\nInca Kola 500 ml: S/ 2.50 · 36 unidades [1]\nUsa <script> & no [2]"
+    assert to_html(text) == (
+        "<b>Gaseosas</b>\n<b>Inca Kola 500 ml</b>: S/ 2.50 · 36 unidades\nUsa &lt;script&gt; &amp; no"
+    )
+
+
+def test_to_html_cuts_long_answers_on_whole_lines():
+    from bodeguero.adapters.inbound.telegram_webhook import to_html
+
+    reply = to_html("\n".join(f"Producto {i}: S/ 1.00" for i in range(500)))
+    assert len(reply) <= 4096 and reply.endswith("…") and reply.count("<b>") == reply.count("</b>")

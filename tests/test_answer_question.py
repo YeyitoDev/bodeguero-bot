@@ -58,8 +58,10 @@ def test_inventory_lists_the_whole_catalogue(container):
     container.answer_question._router = _Router(Intent.INVENTORY)
     answer = container.answer_question.execute("dame un listado de mi inventario")
 
-    assert len(answer.text.splitlines()) == 11
-    assert "Inca Kola 500 ml: S/ 2.50, quedan 36 unidades." in answer.text
+    lines = answer.text.splitlines()
+    assert len([line for line in lines if not line.endswith(":")]) == 11
+    assert lines[:2] == ["Abarrotes:", "Arroz Costeño 1 kg: S/ 4.80 · 20 bolsas [1]"]
+    assert "Gaseosas:" in lines
     assert {c.source for c in answer.citations} == {"catalogo/abarrotes.md", "catalogo/bebidas.md"}
 
 
@@ -75,5 +77,5 @@ def test_several_products_answer_each_and_name_the_missing_ones(container):
     container.answer_question._router = _Router(Intent.STOCK, spans)
     answer = container.answer_question.execute("frituras, huevos, turrón?")
 
-    assert answer.text == "Huevos a granel: te quedan 180 huevos. [1]\nNo tienes frituras, turrón en tu catálogo."
+    assert answer.text == "Huevos a granel: te quedan 180 huevos [1]\nNo tienes frituras, turrón en tu catálogo."
     assert answer.grounded

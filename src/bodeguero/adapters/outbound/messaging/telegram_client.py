@@ -18,7 +18,8 @@ class TelegramMessenger:
 
     def send_message(self, chat_id: int, text: str) -> None:
         # TODO(yee): retry on 429 using the `retry_after` value Telegram returns.
-        resp = self._client.post(self._url, json={"chat_id": chat_id, "text": text[:TELEGRAM_MAX_LEN]})
+        body = {"chat_id": chat_id, "text": text[:TELEGRAM_MAX_LEN], "parse_mode": "HTML"}
+        resp = self._client.post(self._url, json=body)
         if resp.status_code != 200:
             log.error("telegram sendMessage failed: %s %s", resp.status_code, resp.text[:200])
 

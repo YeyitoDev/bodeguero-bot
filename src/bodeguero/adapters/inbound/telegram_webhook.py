@@ -10,11 +10,14 @@ quickly, and LLM calls can take seconds. Retries would mean duplicate replies.
 from __future__ import annotations
 
 import hmac
+import html
 import logging
+import re
 
 from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Request, status
 
 from bodeguero.adapters.inbound.schemas import TelegramUpdate
+from bodeguero.adapters.outbound.messaging.telegram_client import TELEGRAM_MAX_LEN
 from bodeguero.bootstrap import Container
 
 log = logging.getLogger(__name__)
@@ -22,18 +25,36 @@ log = logging.getLogger(__name__)
 router = APIRouter(prefix="/telegram", tags=["telegram"])
 
 WELCOME = (
-    "¡Hola! Soy tu asistente de bodega. Pregúntame por precios, stock o ventas. "
-    "Por ejemplo: ¿cuánto cuesta la Inca Kola de 500 ml?"
+    "<b>¡Hola! Soy tu asistente de bodega.</b>\n"
+    "Pregúntame precios, stock, ventas o pídeme tu inventario.\n"
+    "Por ejemplo: <i>¿cuánto está la Inca Kola de 500 ml?</i>"
 )
+_MARKER_RE = re.compile(r"\s*\[\d+\]")
+
+
+def to_html(text: str) -> str:
+    """Telegram HTML: names in bold, "Section:" lines as headings, no [n] markers (sources mean nothing in a chat)."""
+    out: list[str] = []
+    size = 0
+    for line in _MARKER_RE.sub("", text).splitlines():
+        line = html.escape(line, quote=False)
+        name, sep, rest = line.partition(": ")
+        if line.endswith(":") and ": " not in line:
+            line = f"\n<b>{line[:-1]}</b>"
+        elif sep and len(name) <= 60:
+            line = f"<b>{name}</b>: {rest}"
+        # Cut on whole lines: a cut inside a tag makes Telegram reject the message.
+        if size + len(line) + 1 > TELEGRAM_MAX_LEN - 20:
+            out.append("…")
+            break
+        out.append(line)
+        size += len(line) + 1
+    return "\n".join(out).strip()
 
 
 def _handle_message(container: Container, chat_id: int, text: str) -> None:
     try:
-        answer = container.answer_question.execute(text)
-        reply = answer.text
-        if answer.citations:
-            sources = ", ".join(f"[{c.marker}] {c.source}" for c in answer.citations)
-            reply = f"{reply}\n\nFuentes: {sources}"
+        reply = to_html(container.answer_question.execute(text).text)
     except Exception:  # never let one bad message kill the worker silently
         log.exception("failed to answer chat_id=%s", chat_id)
         reply = "Uy, tuve un problema respondiendo. Intenta de nuevo en un momento."

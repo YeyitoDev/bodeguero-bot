@@ -117,7 +117,11 @@ class AnswerQuestion:
         markers: dict[str, int] = {}
         citations: list[Citation] = []
         lines = []
+        section = None
         for product in found:
+            if not searches and product.section != section:  # the full listing is grouped by section
+                section = product.section
+                lines.append(f"{section}:")
             c = product.chunk.chunk
             if c.content_hash not in markers:
                 markers[c.content_hash] = len(markers) + 1

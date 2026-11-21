@@ -40,6 +40,7 @@ class ProductLine:
     name: str
     line: str
     chunk: RetrievedChunk
+    section: str  # the heading above the line, e.g. "Gaseosas"
     keys: frozenset[str]  # words of the section heading + product name
 
 
@@ -55,7 +56,7 @@ def products(chunks: list[RetrievedChunk]) -> list[ProductLine]:
             name, sep, _ = line.partition(":")
             if sep and _PRICE_RE.search(line) and line not in seen:
                 seen.add(line)
-                found.append(ProductLine(name.strip(), line, rc, frozenset(_words(f"{heading} {name}"))))
+                found.append(ProductLine(name.strip(), line, rc, heading, frozenset(_words(f"{heading} {name}"))))
     # A chunk starts with the cut-off tail of the previous one (chunking overlap): drop those halves.
     return [p for p in found if not any(p.line != q.line and p.line in q.line for q in found)]
 
@@ -74,14 +75,14 @@ def find_products(query: str, chunks: list[RetrievedChunk], brand: str = "", siz
 
 
 def reply(intent: Intent, product: ProductLine) -> str:
-    """Template answer line for a price, stock or inventory question."""
+    """One answer line, "Name: what was asked", kept short for a phone screen."""
     price = _PRICE_RE.search(product.line)
     cost = f"S/ {price.group(1)}{price.group(2) or ''}"
     stock = _STOCK_RE.search(product.line)
     if intent is Intent.PRICE or not stock:
-        return f"{product.name}: {cost}."
+        return f"{product.name}: {cost}"
     left = stock.group(1).strip()
     if intent is Intent.INVENTORY:
-        return f"{product.name}: {cost}, quedan {left}."
-    note = f" {stock.group(2).strip()}" if stock.group(2).strip() else ""
-    return f"{product.name}: te quedan {left}.{note}"
+        return f"{product.name}: {cost} · {left}"
+    note = stock.group(2).strip()
+    return f"{product.name}: te quedan {left}" + (f" · {note}" if note else "")
