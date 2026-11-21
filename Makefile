@@ -6,7 +6,7 @@ PYTHON ?= python3.13
 install:            ## local venv setup
 	$(PYTHON) -m venv .venv && .venv/bin/pip install -r requirements-dev.txt && .venv/bin/pip install -e .
 
-LECTOR_URL ?= https://github.com/YeyitoDev/bodeguero-bot/releases/download/lector-v1/lector.onnx
+LECTOR_URL ?= https://github.com/YeyitoDev/bodeguero-bot/releases/download/lector-v2/lector.onnx
 
 lector: modelos/lector/lector.onnx   ## download the lector weights (GitHub release)
 

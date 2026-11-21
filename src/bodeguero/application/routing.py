@@ -23,6 +23,7 @@ log = logging.getLogger(__name__)
 INTENT_DOMAIN: dict[Intent, Domain] = {
     Intent.PRICE: Domain.INVENTORY,
     Intent.STOCK: Domain.INVENTORY,
+    Intent.INVENTORY: Domain.INVENTORY,
     Intent.SALES: Domain.SALES,
     Intent.ADVICE: Domain.ADVICE,
 }
@@ -44,7 +45,7 @@ _KEYWORDS: dict[Domain, tuple[str, ...]] = {
     Domain.ADVICE: ("consejo", "como puedo", "deberia", "recomienda", "mejorar", "estrategia", "idea"),
 }
 
-def route_for(intent: Intent, confidence: float, reason: str, spans: dict[str, str] | None = None) -> Route:
+def route_for(intent: Intent, confidence: float, reason: str, spans: list[dict[str, str]] | None = None) -> Route:
     """The Route a classifier gives once it knows the intent: domain filter and model size follow from it."""
     return Route(
         domain=INTENT_DOMAIN.get(intent, Domain.UNKNOWN),
@@ -52,11 +53,12 @@ def route_for(intent: Intent, confidence: float, reason: str, spans: dict[str, s
         reason=reason,
         intent=intent,
         confidence=confidence,
-        spans=spans or {},
+        spans=spans or [],
     )
 
 
 _PRICE_WORDS = ("precio", "cuesta", "vale", "cuanto esta", "a cuanto", "cobro")
+_LIST_WORDS = ("inventario", "listado", "lista", "catalogo")
 
 # Words that suggest the question needs reasoning, not just a lookup.
 _COMPLEX_HINTS = ("por que", "deberia", "compar", "estrategia", "recomienda", "analiza", "conviene")
@@ -81,7 +83,11 @@ class KeywordRouter:
         is_complex = any(h in q for h in _COMPLEX_HINTS) or len(re.findall(r"\w+", q)) > 25
         tier = ModelTier.LARGE if is_complex else ModelTier.SMALL
         intent = {
-            Domain.INVENTORY: Intent.PRICE if any(w in q for w in _PRICE_WORDS) else Intent.STOCK,
+            Domain.INVENTORY: (
+                Intent.INVENTORY if any(w in q for w in _LIST_WORDS)
+                else Intent.PRICE if any(w in q for w in _PRICE_WORDS)
+                else Intent.STOCK
+            ),
             Domain.SALES: Intent.SALES,
             Domain.ADVICE: Intent.ADVICE,
         }.get(domain)

@@ -33,4 +33,9 @@ def test_lector_reads_the_intent(lector, question, intent):
 def test_lector_extracts_product_brand_and_size(lector):
     route = lector.route("¿cuánto cuesta la gaseosa Inca Kola de litro y medio?")
     assert route.domain is Domain.INVENTORY
-    assert route.spans == {"PRODUCTO": "gaseosa", "MARCA": "Inca Kola", "MEDIDA": "litro y medio"}
+    assert route.spans == [{"PRODUCTO": "gaseosa", "MARCA": "Inca Kola", "MEDIDA": "litro y medio"}]
+
+
+def test_lector_splits_several_products(lector):
+    route = lector.route("frituras, panetón, turrón?")
+    assert [s.get("PRODUCTO") for s in route.spans] == ["frituras", "panetón", "turrón"]

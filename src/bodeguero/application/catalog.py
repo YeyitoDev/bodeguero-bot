@@ -40,40 +40,48 @@ class ProductLine:
     name: str
     line: str
     chunk: RetrievedChunk
+    keys: frozenset[str]  # words of the section heading + product name
 
 
-def find_product(query: str, chunks: list[RetrievedChunk], brand: str = "", size: str = "") -> ProductLine | None:
-    """The catalogue line whose name shares the most words with the query.
-
-    A brand or size the bodeguero named must be in that line: a price for another
-    brand or another size would be a wrong answer about money.
-    """
-    wanted, required = _words(query), _words(brand) | _words(size)
-    best: tuple[int, ProductLine] | None = None
-    for rc in chunks:
+def products(chunks: list[RetrievedChunk]) -> list[ProductLine]:
+    """Every catalogue line in the chunks, in document order, once."""
+    found, seen = [], set()
+    for rc in sorted(chunks, key=lambda c: (c.chunk.source, c.chunk.position)):
         heading = ""
         for line in (p.strip() for p in rc.chunk.text.splitlines()):
             if line.startswith("#"):
                 heading = line.lstrip("# ")
                 continue
             name, sep, _ = line.partition(":")
-            if not sep or not _PRICE_RE.search(line):
-                continue
-            have = _words(f"{heading} {name}")
-            if not required <= have:
-                continue
-            score = len(wanted & have)
-            if score and (best is None or score > best[0]):
-                best = (score, ProductLine(name=name.strip(), line=line, chunk=rc))
-    return best[1] if best else None
+            if sep and _PRICE_RE.search(line) and line not in seen:
+                seen.add(line)
+                found.append(ProductLine(name.strip(), line, rc, frozenset(_words(f"{heading} {name}"))))
+    # A chunk starts with the cut-off tail of the previous one (chunking overlap): drop those halves.
+    return [p for p in found if not any(p.line != q.line and p.line in q.line for q in found)]
+
+
+def find_products(query: str, chunks: list[RetrievedChunk], brand: str = "", size: str = "") -> list[ProductLine]:
+    """The catalogue lines whose names share the most words with the query.
+
+    Ties are all returned: "gaseosas" matches every line under "## Gaseosas", and
+    "Inca Kola" without a size matches both sizes. A brand or size the bodeguero
+    named must be in the line: a price for another brand or size would be wrong money.
+    """
+    wanted, required = _words(query), _words(brand) | _words(size)
+    scored = [(len(wanted & p.keys), p) for p in products(chunks) if required <= p.keys]
+    best = max((s for s, _ in scored), default=0)
+    return [p for s, p in scored if s == best] if best else []
 
 
 def reply(intent: Intent, product: ProductLine) -> str:
-    """Template answer for a price or stock question, citing the chunk as [1]."""
-    if intent is Intent.STOCK:
-        m = _STOCK_RE.search(product.line)
-        if m:
-            note = f" {m.group(2).strip()}" if m.group(2).strip() else ""
-            return f"{product.name}: te quedan {m.group(1).strip()}.{note} [1]"
+    """Template answer line for a price, stock or inventory question."""
     price = _PRICE_RE.search(product.line)
-    return f"{product.name}: S/ {price.group(1)}{price.group(2) or ''}. [1]"
+    cost = f"S/ {price.group(1)}{price.group(2) or ''}"
+    stock = _STOCK_RE.search(product.line)
+    if intent is Intent.PRICE or not stock:
+        return f"{product.name}: {cost}."
+    left = stock.group(1).strip()
+    if intent is Intent.INVENTORY:
+        return f"{product.name}: {cost}, quedan {left}."
+    note = f" {stock.group(2).strip()}" if stock.group(2).strip() else ""
+    return f"{product.name}: te quedan {left}.{note}"

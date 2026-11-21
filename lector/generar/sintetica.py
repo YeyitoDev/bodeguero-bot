@@ -57,6 +57,10 @@ PRODUCTOS = [
     ('cigarros', 'm', ('cajetillas', 'f'), ['Hamilton', 'Lucky Strike', 'Pall Mall'], ['cajetilla', 'suelto']),
     ('caramelos', 'm', ('bolsas', 'f'), ['Halls', 'Mentitas', 'Chick'], ['bolsa', 'sueltos']),
     ('queso', 'm', ('kilos', 'm'), ['Bonlé', 'Laive', 'Gloria'], ['fresco', 'edam', 'medio kilo']),
+    ('papitas', 'f', ('bolsas', 'f'), ["Lay's", 'Inka Chips', 'Pringles', 'Karinto'], ['chicas', 'grandes', 'familiar', 'de 42 g']),
+    ('panetón', 'm', ('cajas', 'f'), ["D'Onofrio", 'Todinno', 'Motta', 'Buon Giorno'], ['en caja', 'en bolsa', 'de 900 g', 'chico']),
+    ('turrón', 'm', ('cajas', 'f'), ['Doña Pepa', 'San José'], ['de 500 g', 'en barra', 'chico']),
+    ('frituras', 'f', ('bolsas', 'f'), ['Cuates', 'Tor-Tees', 'Chizitos', 'Piqueo Snax'], ['chicas', 'grandes']),
 ]
 CANTIDADES = ['2', '3', '5', '10', 'dos', 'tres', 'cuatro', 'seis', 'una docena', 'media docena', 'un ciento']
 PERIODOS = ['hoy', 'ayer', 'esta semana', 'la semana pasada', 'el mes pasado', 'este mes', 'en octubre',
@@ -74,6 +78,7 @@ PLANTILLAS = {
         '¿cuánto cobro por {obj}?', '¿a cuánto lo tengo {obj}?', '{nom} ¿cuánto?', 'precio {nom}',
         '¿cuánto están {cant} {nom}?', '¿a cuánto está {obj} ahorita?',
         '¿me podría decir cuánto cuesta {obj}?u', 'disculpe, ¿a cuánto está {obj}?u',
+        'precio de {nom} y {nom}', '¿cuánto cuestan {nom}, {nom} y {nom}?',
         '¿a cuánto sale {obj}?', '¿cuánto le pongo a {obj}?',
     ],
     'stock': [
@@ -82,6 +87,8 @@ PLANTILLAS = {
         '¿todavía hay {nom}?', '¿me quedan {nom}?', '¿cuánto stock hay de {obj}?', '¿tengo que reponer {obj}?',
         'quedan {nom}?', '¿cuántos {nom} hay?', '¿ya no hay {nom}?', '{nom} ¿hay?',
         '¿sabe si queda {nom}?u', '¿me podría decir cuánto stock tengo de {obj}?u',
+        '{nom}?', '¿{nom}?', '¿hay {nom}, {nom} o {nom}?', '{nom}, {nom} y {nom}?', '{nom}, {nom}?',
+        'stock de {prod}', '¿cuántas {prod} me quedan?',
         '¿cuánto inventario tengo de {obj}?', '¿me alcanza {obj} para la semana?',
     ],
     'ventas': [
@@ -117,6 +124,14 @@ PLANTILLAS = {
         '¿cuál es la capital de Francia?', 'escríbeme un poema', '¿cuánto está el dólar?', '¿cómo está el tráfico?',
         'pon música', '¿quién es el presidente?', '¿cuántos años tienes?', 'hazme la tarea de matemáticas',
         '¿me podría recomendar una película?u', '¿qué opina del clima?u', '¿cuándo juega Perú?', '¿cómo se hace un ceviche?',
+    ],
+    'inventario': [
+        'dame un listado de mi inventario', '¿qué productos tengo?', 'muéstrame todo el inventario', 'lista de productos',
+        '¿qué tengo en la tienda?', 'inventario', 'dame el inventario completo', '¿qué {prod} tengo?', 'lista de {prod}',
+        '¿qué {prod} hay?', 'todos {los} {prod} que tengo', 'muéstrame mi catálogo', '¿qué vendo en la bodega?',
+        'quiero ver todo mi stock', 'listado de {prod}', '¿qué marcas de {prod} tengo?', 'catálogo',
+        '¿me podría pasar la lista de productos?u', '¿qué productos me quedan?',
+        'pásame todo lo que hay en la bodega', '¿qué tipos de {prod} vendo?',
     ],
 }
 PREFIJOS = ['', '', '', 'oe ', 'causa, ', 'una pregunta, ', 'oye ', 'ya, ']
@@ -265,7 +280,7 @@ def main(semilla: int = 7) -> None:
     marcas_prueba = set(todas[::5])  # una de cada cinco marcas sólo en la prueba
     marcas_ent = set(todas) - marcas_prueba
     ent_plant = {k: v[:-2] for k, v in PLANTILLAS.items()}
-    peso = {'precio': 3, 'stock': 3, 'ventas': 2, 'consejo': 2, 'saludo': 1, 'cortesia': 1, 'fuera': 1}
+    peso = {'precio': 3, 'stock': 3, 'ventas': 2, 'consejo': 2, 'saludo': 1, 'cortesia': 1, 'fuera': 1, 'inventario': 1.5}
 
     ent = generar(4000, peso, ent_plant, marcas_ent, rng, 'ent')
     vistos = {f['texto'].lower() for f in ent}

@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     router: Literal["lector", "keywords"] = "lector"
     lector_dir: str = "modelos/lector"
     typesafe_api_key: str = ""  # Jev; empty -> no fallback when the lector isn't sure
-    jev_min_confidence: float = 0.7  # below this, the lector asks Jev
+    jev_min_confidence: float = 0.8  # below this, the lector asks Jev
 
     # --- retrieval ---
     top_k: int = 4

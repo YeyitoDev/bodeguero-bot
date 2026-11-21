@@ -33,7 +33,8 @@ class _Fixed:
 
 
 def _route(intent, confidence, **spans):
-    return Route(domain=Domain.UNKNOWN, tier=ModelTier.SMALL, intent=intent, confidence=confidence, spans=spans)
+    return Route(domain=Domain.UNKNOWN, tier=ModelTier.SMALL, intent=intent, confidence=confidence,
+                 spans=[spans] if spans else [])
 
 
 def test_fallback_is_not_asked_when_the_primary_is_sure():
@@ -45,7 +46,7 @@ def test_unsure_primary_takes_the_fallback_intent_but_keeps_its_spans():
     unsure = _route(Intent.SALES, 0.4, PRODUCTO="aceite")
     routed = FallbackRouter(_Fixed(unsure), _Fixed(_route(Intent.PRICE, 0.9)), 0.7).route("q")
     assert routed.intent is Intent.PRICE
-    assert routed.spans == {"PRODUCTO": "aceite"}
+    assert routed.spans == [{"PRODUCTO": "aceite"}]
 
 
 def test_failing_fallback_keeps_the_primary():

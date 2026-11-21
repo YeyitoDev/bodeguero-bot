@@ -1,7 +1,7 @@
 """AnswerQuestion use case (ONLINE path). This is the orchestrator, built as a LangGraph.
 
     question -> route (intent + spans)
-      precio / stock            -> catalog: retrieve in the catalogue, pick the product line, template answer
+      precio / stock / inventario -> catalog: scan the catalogue, pick the product lines, template answer
       ventas / consejo / unsure -> rag:     retrieve -> grounded prompt -> LLM -> citation check
       saludo / cortesia / fuera -> fixed:   canned answer, no retrieval
 
@@ -18,7 +18,7 @@ from typing import TypedDict
 
 from langgraph.graph import END, START, StateGraph
 
-from bodeguero.application.catalog import find_product, reply
+from bodeguero.application.catalog import ProductLine, find_products, products, reply
 from bodeguero.application.prompts import NO_ANSWER, PROMPT_VERSION, SYSTEM_PROMPT, build_user_prompt
 from bodeguero.application.routing import Router
 from bodeguero.domain.models import Answer, Citation, Domain, Intent, RetrievedChunk, Route
@@ -29,6 +29,11 @@ from bodeguero.ports.vector_store import VectorStorePort
 log = logging.getLogger(__name__)
 
 _CITATION_RE = re.compile(r"\[(\d+)\]")
+_CATALOG = (Intent.PRICE, Intent.STOCK, Intent.INVENTORY)
+_PRODUCT_LABELS = ("PRODUCTO", "MARCA", "MEDIDA")
+# shortcut: the catalog node reads up to this many catalogue chunks per question, fine for one bodega;
+# past that, filter product lines in SQL instead of scanning them.
+_CATALOG_SCAN = 500
 
 _FIXED = {
     Intent.GREETING: "¡Hola! Pregúntame precios, stock, ventas o consejos para tu bodega.",
@@ -72,12 +77,19 @@ class AnswerQuestion:
         self._graph = graph.compile()
 
     def execute(self, question: str) -> Answer:
-        return self._graph.invoke({"question": question})["answer"]
+        answer = self._graph.invoke({"question": question})["answer"]
+        r = answer.route
+        # DEBUG because it carries the user's text; turn it on only to review real questions.
+        log.debug(
+            "routed",
+            extra={"question": question, "intent": r.intent, "why": r.reason, "spans": r.spans, "answer": answer.text},
+        )
+        return answer
 
     @staticmethod
     def _branch(state: _State) -> str:
         intent = state["route"].intent
-        if intent in (Intent.PRICE, Intent.STOCK):
+        if intent in _CATALOG:
             return "catalog"
         return "fixed" if intent in _FIXED else "rag"
 
@@ -86,24 +98,40 @@ class AnswerQuestion:
         return {"answer": Answer(text=_FIXED[route.intent], route=route, grounded=route.intent is not Intent.OTHER)}
 
     def _catalog(self, state: _State) -> _State:
-        route = state["route"]
-        # The lector's spans are a cleaner query than the whole question; keywords give none.
-        query = " ".join(v for k, v in route.spans.items() if k in ("PRODUCTO", "MARCA", "MEDIDA")) or state["question"]
-        product = find_product(
-            query,
-            self._retrieve(query, Domain.INVENTORY),
-            brand=route.spans.get("MARCA", ""),
-            size=route.spans.get("MEDIDA", ""),
-        )
-        if product is None:
-            return {"answer": Answer(text=f"No encuentro «{query}» en tu catálogo.", route=route, grounded=False)}
-        c = product.chunk.chunk
+        question, route = state["question"], state["route"]
+        vec = self._embeddings.embed_query(question)
+        chunks = self._store.search(vec, _CATALOG_SCAN, domain=Domain.INVENTORY)
+        named = [s for s in route.spans if s.keys() & set(_PRODUCT_LABELS)]
+        # Keywords give no spans: search with the whole question. Inventory with nothing named lists everything.
+        searches = named or ([] if route.intent is Intent.INVENTORY else [{"PRODUCTO": question}])
+
+        found: list[ProductLine] = [] if searches else products(chunks)
+        missing: list[str] = []
+        for s in searches:
+            query = " ".join(s[k] for k in _PRODUCT_LABELS if k in s)
+            hits = find_products(query, chunks, brand=s.get("MARCA", ""), size=s.get("MEDIDA", ""))
+            found += [h for h in hits if h.line not in {f.line for f in found}]
+            if not hits:
+                missing.append(query if named else "ese producto")
+
+        markers: dict[str, int] = {}
+        citations: list[Citation] = []
+        lines = []
+        for product in found:
+            c = product.chunk.chunk
+            if c.content_hash not in markers:
+                markers[c.content_hash] = len(markers) + 1
+                citations.append(Citation(marker=markers[c.content_hash], source=c.source, content_hash=c.content_hash))
+            lines.append(f"{reply(route.intent, product)} [{markers[c.content_hash]}]")
+        if missing:
+            lines.append(f"No tienes {', '.join(missing)} en tu catálogo.")
         return {
             "answer": Answer(
-                text=reply(route.intent, product),
-                citations=[Citation(marker=1, source=c.source, content_hash=c.content_hash)],
+                text="\n".join(lines) or "Tu catálogo está vacío.",
+                citations=citations,
                 route=route,
                 model="catalog",
+                grounded=bool(found),
             )
         }
 

@@ -22,6 +22,7 @@ _CRITERIA = {
     Intent.GREETING.value: "Saluda o pide ayuda sin preguntar nada todavía.",
     Intent.THANKS.value: "Agradece, se despide o cierra la conversación.",
     Intent.OTHER.value: "Habla de algo que no es su bodega.",
+    Intent.INVENTORY.value: "Pide la lista de sus productos: todo el inventario o una categoría (qué gaseosas tiene).",
 }
 
 

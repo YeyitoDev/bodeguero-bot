@@ -1,5 +1,6 @@
 from bodeguero.application.prompts import NO_ANSWER
-from bodeguero.domain.models import Completion, Domain, ModelTier
+from bodeguero.application.routing import route_for
+from bodeguero.domain.models import Completion, Domain, Intent, ModelTier
 
 
 def test_answer_is_grounded_and_cites_the_right_source(container):
@@ -43,3 +44,36 @@ def test_misrouted_question_falls_back_to_all_domains(container):
     assert answer.route.domain is Domain.SALES
     assert answer.grounded
     assert answer.citations[0].source == "catalogo/abarrotes.md"
+
+
+class _Router:
+    def __init__(self, intent, spans=()):
+        self._route = route_for(intent, 1.0, "test", list(spans))
+
+    def route(self, question):
+        return self._route
+
+
+def test_inventory_lists_the_whole_catalogue(container):
+    container.answer_question._router = _Router(Intent.INVENTORY)
+    answer = container.answer_question.execute("dame un listado de mi inventario")
+
+    assert len(answer.text.splitlines()) == 11
+    assert "Inca Kola 500 ml: S/ 2.50, quedan 36 unidades." in answer.text
+    assert {c.source for c in answer.citations} == {"catalogo/abarrotes.md", "catalogo/bebidas.md"}
+
+
+def test_category_stock_answers_every_product_in_it(container):
+    container.answer_question._router = _Router(Intent.STOCK, [{"PRODUCTO": "gaseosas"}])
+    lines = container.answer_question.execute("stock de gaseosas").text.splitlines()
+
+    assert [line.split(":")[0] for line in lines] == ["Inca Kola 500 ml", "Coca-Cola 500 ml", "Inca Kola 1.5 litros"]
+
+
+def test_several_products_answer_each_and_name_the_missing_ones(container):
+    spans = [{"PRODUCTO": "frituras"}, {"PRODUCTO": "huevos"}, {"PRODUCTO": "turrón"}]
+    container.answer_question._router = _Router(Intent.STOCK, spans)
+    answer = container.answer_question.execute("frituras, huevos, turrón?")
+
+    assert answer.text == "Huevos a granel: te quedan 180 huevos. [1]\nNo tienes frituras, turrón en tu catálogo."
+    assert answer.grounded

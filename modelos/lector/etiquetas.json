@@ -6,7 +6,8 @@
     "consejo",
     "saludo",
     "cortesia",
-    "fuera"
+    "fuera",
+    "inventario"
   ],
   "banderas": [
     "usted"
@@ -32,7 +33,7 @@
     "I-PERIODO"
   ],
   "salidas": {
-    "intencion": "[lote, 7] probabilidades (softmax) en el orden de «intenciones»",
+    "intencion": "[lote, 8] probabilidades (softmax) en el orden de «intenciones»",
     "banderas": "[lote, 1] probabilidad de cada bandera (sigmoide), encendida si ≥ 0,5",
     "tramos": "[lote, largo, 11] probabilidades BIO por pieza (softmax) en el orden de «bio»"
   },

@@ -43,9 +43,12 @@ class LectorRouter:
         intent = self._intents[best]
         bio_ids = p_bio[0].argmax(-1)
         word_tags = [self._bio[bio_ids[p]] if p >= 0 else "O" for p in enc.primera_pieza]
-        spans: dict[str, str] = {}
+        # A label seen again starts the next thing named: "papitas, panetón y turrón" is three products.
+        spans: list[dict[str, str]] = []
         for t in tramos_de_bio(word_tags, [(w.inicio, w.fin) for w in enc.palabras]):
-            spans.setdefault(t["etiqueta"], question[t["inicio"] : t["fin"]])
+            if not spans or t["etiqueta"] in spans[-1]:
+                spans.append({})
+            spans[-1][t["etiqueta"]] = question[t["inicio"] : t["fin"]]
 
         confidence = float(p_intent[0][best])
         return route_for(intent, confidence, f"lector p={confidence:.2f}", spans)

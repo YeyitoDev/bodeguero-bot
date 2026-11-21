@@ -101,3 +101,32 @@ fuera	que dia es hoy
 fuera	como hago un pollo a la brasa
 fuera	pon salsa
 fuera	cual es el mejor celular
+# Reales: escritas por el dueño en Telegram (21/11/2026).
+inventario	Dame un listdo de nuestro inventario
+stock	Stock de [gaseosas]PRODUCTO
+stock	[Papitas]PRODUCTO?
+stock	[Frituras]PRODUCTO, [panetion]PRODUCTO, [turron]PRODUCTO?
+# Escritas a mano: inventario, frases cortas y varios productos (NO son reales).
+inventario	que productos tengo
+inventario	pasame la lista de todo lo que hay
+inventario	inventario completo porfa
+inventario	q tengo en la tienda
+inventario	muestrame mi catalogo
+inventario	que [gaseosas]PRODUCTO tengo
+inventario	lista de [cervezas]PRODUCTO
+inventario	que marcas de [arroz]PRODUCTO vendo
+inventario	todo lo q tengo de [abarrotes]PRODUCTO
+inventario	me puede dar el listado de productos	u
+inventario	listado
+inventario	que me queda en la bodega
+inventario	que [galletas]PRODUCTO hay
+stock	[huevos]PRODUCTO?
+stock	[gas]PRODUCTO??
+stock	[chifles]PRODUCTO
+stock	hay [panetones]PRODUCTO?
+stock	[pilsen]MARCA, [cristal]MARCA?
+stock	tengo [arroz]PRODUCTO, [azucar]PRODUCTO y [aceite]PRODUCTO?
+stock	[turron]PRODUCTO [doña pepa]MARCA hay?
+precio	precio de la [inca]MARCA y la [coca]MARCA
+precio	cuanto cuestan las [papitas]PRODUCTO [lays]MARCA y los [chizitos]MARCA
+precio	[paneton]PRODUCTO [donofrio]MARCA cuanto

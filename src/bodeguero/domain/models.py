@@ -31,6 +31,7 @@ class Intent(str, Enum):
     GREETING = "saludo"
     THANKS = "cortesia"
     OTHER = "fuera"
+    INVENTORY = "inventario"  # list the whole catalogue or one category
 
 
 class ModelTier(str, Enum):
@@ -89,7 +90,9 @@ class Route:
     reason: str = ""
     intent: Intent | None = None  # None: the router can't tell, so the answer goes through RAG
     confidence: float = 1.0
-    spans: dict[str, str] = field(default_factory=dict)  # e.g. {"PRODUCTO": "aceite", "MARCA": "Primor"}
+    # One dict per thing named: "Inca Kola de litro y medio y Coca-Cola"
+    # -> [{"MARCA": "Inca Kola", "MEDIDA": "litro y medio"}, {"MARCA": "Coca-Cola"}]
+    spans: list[dict[str, str]] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
