@@ -1,0 +1,48 @@
+{
+  "intenciones": [
+    "precio",
+    "stock",
+    "ventas",
+    "consejo",
+    "saludo",
+    "cortesia",
+    "fuera"
+  ],
+  "banderas": [
+    "usted"
+  ],
+  "etiquetas": [
+    "PRODUCTO",
+    "MARCA",
+    "MEDIDA",
+    "CANTIDAD",
+    "PERIODO"
+  ],
+  "bio": [
+    "O",
+    "B-PRODUCTO",
+    "I-PRODUCTO",
+    "B-MARCA",
+    "I-MARCA",
+    "B-MEDIDA",
+    "I-MEDIDA",
+    "B-CANTIDAD",
+    "I-CANTIDAD",
+    "B-PERIODO",
+    "I-PERIODO"
+  ],
+  "salidas": {
+    "intencion": "[lote, 7] probabilidades (softmax) en el orden de «intenciones»",
+    "banderas": "[lote, 1] probabilidad de cada bandera (sigmoide), encendida si ≥ 0,5",
+    "tramos": "[lote, largo, 11] probabilidades BIO por pieza (softmax) en el orden de «bio»"
+  },
+  "umbral_bandera": 0.5,
+  "onnxruntime": {
+    "version_probada": "1.30.0",
+    "hilos": 1,
+    "config_sesion": {
+      "mlas.disable_kleidiai": "1"
+    }
+  },
+  "como_se_lee_el_bio": "La etiqueta de cada palabra es el argmax en su PRIMERA pieza. Un tramo empieza en B-X, o en I-X si la palabra anterior no era X, y sigue con las I-X que vengan. El tramo va del inicio de su primera palabra al fin de la última."
+}

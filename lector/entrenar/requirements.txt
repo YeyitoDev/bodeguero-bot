@@ -1,0 +1,17 @@
+# Lo que hace falta para reentrenar, exportar y medir el lector, con las
+# versiones exactas con las que se hizo el 21/10/2026 (Python 3.11, Mac arm64).
+# El entorno va FUERA del repo y se instala sin caché para no llenar el disco:
+#   python3.11 -m venv <tmp>/venv
+#   <tmp>/venv/bin/pip install --no-cache-dir -r requirements.txt
+torch==2.14.1
+transformers==5.20.2
+tokenizers==0.23.3
+huggingface_hub==2.2.0
+safetensors==0.8.0
+onnx==1.23.2
+# La misma versión que onnxruntime-node (1.30.0 en npm): los ejemplos de
+# salida esperada se generan con ella y el Express debe usar la misma.
+onnxruntime==1.30.0
+numpy==2.4.6
+sympy==1.14.0
+protobuf==7.36.2

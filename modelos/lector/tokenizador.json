@@ -1,0 +1,44 @@
+{
+  "tipo": "wordpiece",
+  "vocabulario": "vocab.txt (una pieza por línea; el id es el número de línea desde 0)",
+  "tamano_vocabulario": 26359,
+  "minusculas": true,
+  "quitar_tildes": false,
+  "normalizacion_si_no_se_quitan_tildes": "NFC",
+  "largo_maximo": 64,
+  "max_letras_por_palabra": 100,
+  "prefijo_continuacion": "##",
+  "tokens_especiales": {
+    "cls": {
+      "pieza": "[CLS]",
+      "id": 11
+    },
+    "sep": {
+      "pieza": "[SEP]",
+      "id": 12
+    },
+    "unk": {
+      "pieza": "[UNK]",
+      "id": 10
+    },
+    "pad": {
+      "pieza": "[PAD]",
+      "id": 0
+    }
+  },
+  "particion": {
+    "palabra": "tira de \\p{L} y \\p{N}; una \\p{M} continúa la palabra abierta y suelta se descarta",
+    "descartado": "\\p{Z}, \\p{Cc}, \\p{Cf} y las \\p{M} sueltas",
+    "simbolo": "cualquier otro punto de código, uno por unidad",
+    "recorrido": "por puntos de código (en JavaScript: for…of o Array.from, nunca por índice UTF-16)"
+  },
+  "truncado": "si [CLS] + piezas + [SEP] pasa de largo_maximo, se cortan las piezas del final",
+  "primera_pieza": "índice en input_ids (con el [CLS] contado) de la primera pieza de cada palabra; -1 si el truncado la dejó fuera entera o no dio piezas: esa palabra va como O. Si su primera pieza cabe y las siguientes no, lleva el índice de la primera",
+  "etiqueta_de_palabra": "la de su PRIMERA pieza; los símbolos y las demás piezas no llevan etiqueta",
+  "modelo_base": "Geotrend/distilbert-base-es-cased",
+  "entradas_del_onnx": [
+    "input_ids",
+    "attention_mask"
+  ],
+  "nota": "attention_mask va en 1 en cada pieza real; con lote de 1 no hay relleno. Los tensores son int64."
+}

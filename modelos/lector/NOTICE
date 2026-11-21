@@ -1,0 +1,16 @@
+El lector del bodeguero
+=======================
+
+lector.onnx y vocab.txt son una obra derivada de un modelo publicado con la
+licencia Apache 2.0 (texto completo en LICENSE).
+
+Modelo base: Geotrend/distilbert-base-es-cased, revisión
+1db4091250e535236cc5e2b8b487e1a075fa738b (Apache-2.0), versión recortada al
+español de distilbert/distilbert-base-multilingual-cased (Apache-2.0).
+
+Lo que se modificó: se le añadieron tres cabezas (intención, una bandera y
+tramos BIO), se afinó con los datos sintéticos de lector/datos, se exportó a
+ONNX y se cuantizó a int8. Es una copia del lector de restaurant-system,
+reentrenada para preguntas de bodega. Los pesos NO son los originales.
+
+Cómo rehacerlo: lector/entrenar/reentrenar.sh.
