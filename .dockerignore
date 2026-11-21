@@ -1,0 +1,8 @@
+# Only what the Dockerfile copies goes to the builder; never the secrets in .env.
+*
+!requirements.txt
+!pyproject.toml
+!src
+!data
+!modelos
+**/__pycache__

@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      # The lector weights live in a GitHub release; the cache key changes when the sha256 does.
+      - uses: actions/cache@v4
+        with:
+          path: modelos/lector/lector.onnx
+          key: lector-${{ hashFiles('modelos/lector/lector.onnx.sha256') }}
+      - run: make lector
+      - run: pip install -r requirements-dev.txt && pip install -e .
+      - run: ruff check src tests evals
+      - run: pytest -q
+      - run: python -m evals.run_evals
+
+  deploy:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    concurrency: deploy-fly
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: modelos/lector/lector.onnx
+          key: lector-${{ hashFiles('modelos/lector/lector.onnx.sha256') }}
+      - run: make lector
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: flyctl deploy --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

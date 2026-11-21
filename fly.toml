@@ -1,0 +1,33 @@
+app = "bodeguero-bot"
+primary_region = "gru"  # São Paulo: the closest region to Lima
+
+[build]
+
+# Memory mode: the sample data is indexed at startup, no Postgres yet.
+# Secrets (TELEGRAM_BOT_TOKEN, TELEGRAM_WEBHOOK_SECRET, TYPESAFE_API_KEY) go in `fly secrets`.
+[env]
+  VECTOR_STORE = "memory"
+  LLM_PROVIDER = "fake"
+  EMBEDDINGS_PROVIDER = "hashing"
+  ROUTER = "lector"
+  LOG_LEVEL = "INFO"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  # shortcut: stops when idle, so the first message after a pause waits a few seconds
+  # for the machine to start; set min_machines_running = 1 when the bot has real users.
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/health"
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "20s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

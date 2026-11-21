@@ -125,6 +125,14 @@ export PGVECTOR_TEST_URL=postgresql://bodeguero:bodeguero@localhost:5432/bodegue
 
 Without a token, replies are written to the logs, so you can develop without Telegram.
 
+### Deploy (Fly.io)
+
+The bot runs at `https://bodeguero-bot.fly.dev` (memory mode, region `gru`, config in `fly.toml`).
+`.github/workflows/ci.yml` runs lint, tests and evals on every push and PR, and deploys to Fly
+when `main` passes (needs the `FLY_API_TOKEN` repo secret). Bot secrets live in Fly:
+`fly secrets set TELEGRAM_BOT_TOKEN=… TELEGRAM_WEBHOOK_SECRET=… TYPESAFE_API_KEY=…`.
+Point the webhook (step 3 above) at `https://bodeguero-bot.fly.dev/telegram/webhook`.
+
 ---
 
 ## Evaluation
