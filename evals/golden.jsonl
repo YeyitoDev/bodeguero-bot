@@ -1,10 +1,10 @@
-{"question": "¿Cuánto cuesta la Inca Kola de 500 ml?", "expected_source": "catalogo/bebidas.md", "must_contain": "2.50"}
-{"question": "¿Cuántas botellas de cerveza Pilsen me quedan?", "expected_source": "catalogo/bebidas.md", "must_contain": "30"}
-{"question": "¿A cuánto vendo el aceite Primor?", "expected_source": "catalogo/abarrotes.md", "must_contain": "9.90"}
-{"question": "¿Cuánto cuesta un huevo?", "expected_source": "catalogo/abarrotes.md", "must_contain": "0.60"}
-{"question": "¿Qué producto se vendió más la primera semana de octubre?", "expected_source": "ventas/octubre-semana-1.md", "must_contain": "Inca Kola"}
-{"question": "¿Cuánto vendí en total la semana del 1 al 7 de octubre?", "expected_source": "ventas/octubre-semana-1.md", "must_contain": "3,480"}
-{"question": "¿Cuál es el límite de fiado por cliente?", "expected_source": "consejos/fiado.md", "must_contain": "50"}
-{"question": "¿Cada cuánto debo cobrar el fiado?", "expected_source": "consejos/fiado.md", "must_contain": "quincena"}
-{"question": "Dame un consejo para vender más gaseosas en verano", "expected_source": "consejos/negocio.md", "must_contain": "heladas"}
-{"question": "¿Tengo gaseosa de litro y medio?", "expected_source": "catalogo/bebidas.md", "must_contain": "1.5"}
+{"question": "¿Cuánto cuesta la Inca Kola de 500 ml?", "expected_source": "catalogo/bebidas.md", "must_contain": "2.50", "intent": "precio"}
+{"question": "¿Cuántas botellas de cerveza Pilsen me quedan?", "expected_source": "catalogo/bebidas.md", "must_contain": "30", "intent": "stock"}
+{"question": "¿A cuánto vendo el aceite Primor?", "expected_source": "catalogo/abarrotes.md", "must_contain": "9.90", "intent": "precio"}
+{"question": "¿Cuánto cuesta un huevo?", "expected_source": "catalogo/abarrotes.md", "must_contain": "0.60", "intent": "precio"}
+{"question": "¿Qué producto se vendió más la primera semana de octubre?", "expected_source": "ventas/octubre-semana-1.md", "must_contain": "Inca Kola", "intent": "ventas"}
+{"question": "¿Cuánto vendí en total la semana del 1 al 7 de octubre?", "expected_source": "ventas/octubre-semana-1.md", "must_contain": "3,480", "intent": "ventas"}
+{"question": "¿Cuál es el límite de fiado por cliente?", "expected_source": "consejos/fiado.md", "must_contain": "50", "intent": "consejo"}
+{"question": "¿Cada cuánto debo cobrar el fiado?", "expected_source": "consejos/fiado.md", "must_contain": "quincena", "intent": "consejo"}
+{"question": "Dame un consejo para vender más gaseosas en verano", "expected_source": "consejos/negocio.md", "must_contain": "heladas", "intent": "consejo"}
+{"question": "¿Tengo gaseosa de litro y medio?", "expected_source": "catalogo/bebidas.md", "must_contain": "1.5", "intent": "stock"}

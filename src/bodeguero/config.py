@@ -26,6 +26,12 @@ class Settings(BaseSettings):
     embedding_model: str = ""
     embedding_dim: int = 1024
 
+    # --- routing (who reads the question) ---
+    router: Literal["lector", "keywords"] = "lector"
+    lector_dir: str = "modelos/lector"
+    typesafe_api_key: str = ""  # Jev; empty -> no fallback when the lector isn't sure
+    jev_min_confidence: float = 0.7  # below this, the lector asks Jev
+
     # --- retrieval ---
     top_k: int = 4
     min_score: float = 0.05

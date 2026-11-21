@@ -1,17 +1,12 @@
-"""AnswerQuestion use case (ONLINE path). This is the orchestrator.
+"""AnswerQuestion use case (ONLINE path). This is the orchestrator, built as a LangGraph.
 
-    question
-      -> route (domain + model tier)
-      -> embed query            \
-      -> retrieve top-k         |  the "R" in RAG. Never skip these.
-      -> (rerank)               /
-      -> build grounded prompt
-      -> LLM
-      -> output checks (citations)
-      -> Answer
+    question -> route (intent + spans)
+      precio / stock            -> catalog: retrieve in the catalogue, pick the product line, template answer
+      ventas / consejo / unsure -> rag:     retrieve -> grounded prompt -> LLM -> citation check
+      saludo / cortesia / fuera -> fixed:   canned answer, no retrieval
 
-The orchestrator depends only on ports. It has no idea whether the LLM is
-OpenAI, Anthropic or a fake, or whether vectors live in pgvector or in memory.
+The orchestrator depends only on ports. It has no idea whether the router is
+the lector, Jev or keywords, or whether vectors live in pgvector or in memory.
 """
 
 from __future__ import annotations
@@ -19,10 +14,14 @@ from __future__ import annotations
 import logging
 import re
 import time
+from typing import TypedDict
 
+from langgraph.graph import END, START, StateGraph
+
+from bodeguero.application.catalog import find_product, reply
 from bodeguero.application.prompts import NO_ANSWER, PROMPT_VERSION, SYSTEM_PROMPT, build_user_prompt
 from bodeguero.application.routing import Router
-from bodeguero.domain.models import Answer, Citation, Domain, RetrievedChunk
+from bodeguero.domain.models import Answer, Citation, Domain, Intent, RetrievedChunk, Route
 from bodeguero.ports.embeddings import EmbeddingsPort
 from bodeguero.ports.llm import LLMPort
 from bodeguero.ports.vector_store import VectorStorePort
@@ -30,6 +29,18 @@ from bodeguero.ports.vector_store import VectorStorePort
 log = logging.getLogger(__name__)
 
 _CITATION_RE = re.compile(r"\[(\d+)\]")
+
+_FIXED = {
+    Intent.GREETING: "¡Hola! Pregúntame precios, stock, ventas o consejos para tu bodega.",
+    Intent.THANKS: "¡De nada! Aquí estoy para lo que necesites.",
+    Intent.OTHER: "Solo sé de tu bodega: precios, stock, ventas y consejos.",
+}
+
+
+class _State(TypedDict, total=False):
+    question: str
+    route: Route
+    answer: Answer
 
 
 class AnswerQuestion:
@@ -49,11 +60,56 @@ class AnswerQuestion:
         self._top_k = top_k
         self._min_score = min_score
 
-    def execute(self, question: str) -> Answer:
-        started = time.perf_counter()
+        graph = StateGraph(_State)
+        graph.add_node("route", lambda s: {"route": self._router.route(s["question"])})
+        graph.add_node("catalog", self._catalog)
+        graph.add_node("rag", self._rag)
+        graph.add_node("fixed", self._fixed)
+        graph.add_edge(START, "route")
+        graph.add_conditional_edges("route", self._branch, ["catalog", "rag", "fixed"])
+        for node in ("catalog", "rag", "fixed"):
+            graph.add_edge(node, END)
+        self._graph = graph.compile()
 
-        # 1. Route
-        route = self._router.route(question)
+    def execute(self, question: str) -> Answer:
+        return self._graph.invoke({"question": question})["answer"]
+
+    @staticmethod
+    def _branch(state: _State) -> str:
+        intent = state["route"].intent
+        if intent in (Intent.PRICE, Intent.STOCK):
+            return "catalog"
+        return "fixed" if intent in _FIXED else "rag"
+
+    def _fixed(self, state: _State) -> _State:
+        route = state["route"]
+        return {"answer": Answer(text=_FIXED[route.intent], route=route, grounded=route.intent is not Intent.OTHER)}
+
+    def _catalog(self, state: _State) -> _State:
+        route = state["route"]
+        # The lector's spans are a cleaner query than the whole question; keywords give none.
+        query = " ".join(v for k, v in route.spans.items() if k in ("PRODUCTO", "MARCA", "MEDIDA")) or state["question"]
+        product = find_product(
+            query,
+            self._retrieve(query, Domain.INVENTORY),
+            brand=route.spans.get("MARCA", ""),
+            size=route.spans.get("MEDIDA", ""),
+        )
+        if product is None:
+            return {"answer": Answer(text=f"No encuentro «{query}» en tu catálogo.", route=route, grounded=False)}
+        c = product.chunk.chunk
+        return {
+            "answer": Answer(
+                text=reply(route.intent, product),
+                citations=[Citation(marker=1, source=c.source, content_hash=c.content_hash)],
+                route=route,
+                model="catalog",
+            )
+        }
+
+    def _rag(self, state: _State) -> _State:
+        started = time.perf_counter()
+        question, route = state["question"], state["route"]
 
         # TODO(yee): query rewriting. Turn follow-ups like "¿y la de 1 litro?"
         # into a standalone question using chat history, before embedding.
@@ -64,7 +120,7 @@ class AnswerQuestion:
         # 3. No context -> don't call the LLM at all. Cheaper and can't hallucinate.
         if not chunks:
             log.info("no relevant context; answering NO_ANSWER", extra={"route": route.domain.value})
-            return Answer(text=NO_ANSWER, route=route, grounded=False)
+            return {"answer": Answer(text=NO_ANSWER, route=route, grounded=False)}
 
         # 4. Generate
         completion = self._llm.generate(SYSTEM_PROMPT, build_user_prompt(question, chunks), route.tier)
@@ -93,13 +149,15 @@ class AnswerQuestion:
                 "latency_ms": round((time.perf_counter() - started) * 1000),
             },
         )
-        return Answer(
-            text=completion.text,
-            citations=citations,
-            route=route,
-            model=completion.model,
-            grounded=grounded,
-        )
+        return {
+            "answer": Answer(
+                text=completion.text,
+                citations=citations,
+                route=route,
+                model=completion.model,
+                grounded=grounded,
+            )
+        }
 
     def _retrieve(self, question: str, domain: Domain) -> list[RetrievedChunk]:
         query_vec = self._embeddings.embed_query(question)

@@ -141,13 +141,30 @@ The pipeline is measured against `evals/golden.jsonl` (real bodeguero questions 
 | **answer has fact** | Does the answer contain the key fact (price, quantity…)? |
 | **grounded** | Does the answer cite at least one real chunk? |
 
-**Baseline** (fake LLM + hashing embeddings + in-memory store, 10 questions):
+Fake LLM + hashing embeddings + in-memory store, 10 questions:
 
-| recall@4 | MRR | answer has fact | grounded |
-|---|---|---|---|
-| 100% | 1.00 | 80% | 100% |
+| Router | recall@4 | MRR | answer has fact | grounded | intent accuracy |
+|---|---|---|---|---|---|
+| `keywords` (baseline) | 100% | 1.00 | 80% | 100% | 50% |
+| `lector` (21/11/2026) | 100% | 1.00 | **100%** | 100% | **100%** |
 
-The fake LLM only quotes one line from the top chunk, so it misses facts that need reasoning (e.g. "cada quincena"). Plugging in a real LLM should close that gap. **Record every change here, with before/after numbers.**
+With the lector, price and stock questions skip the LLM: the catalogue tool answers from the matched line, and
+advice questions are filtered to the right domain (they used to be routed to `ventas`).
+
+### The lector (question classifier)
+
+A copy of restaurant-system's lector (DistilBERT in Spanish, int8 ONNX, ~4 ms per question on CPU), retrained
+on synthetic bodega questions. It returns the intent (`precio`, `stock`, `ventas`, `consejo`, `saludo`,
+`cortesia`, `fuera`) and the spans (`PRODUCTO`, `MARCA`, `MEDIDA`, `CANTIDAD`, `PERIODO`). On its held-out test
+set (brands and templates it never saw): intent 96%, span F1 0.96. When its confidence is below
+`JEV_MIN_CONFIDENCE`, Jev (TypeSafe) picks the intent instead, if `TYPESAFE_API_KEY` is set.
+
+```bash
+python3 lector/generar/sintetica.py                          # data -> lector/datos
+LECTOR_TMP=/private/tmp/lector-bodega lector/entrenar/reentrenar.sh   # ~7 min -> modelos/lector
+```
+
+**Record every change here, with before/after numbers.**
 
 ---
 

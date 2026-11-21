@@ -21,6 +21,18 @@ class Domain(str, Enum):
     UNKNOWN = "desconocido"
 
 
+class Intent(str, Enum):
+    """What the bodeguero wants. Same names as the lector's labels (lector/generar/comun.py)."""
+
+    PRICE = "precio"
+    STOCK = "stock"
+    SALES = "ventas"
+    ADVICE = "consejo"
+    GREETING = "saludo"
+    THANKS = "cortesia"
+    OTHER = "fuera"
+
+
 class ModelTier(str, Enum):
     """Which model size to use. Model routing = cheap model for easy questions."""
 
@@ -75,6 +87,9 @@ class Route:
     domain: Domain
     tier: ModelTier
     reason: str = ""
+    intent: Intent | None = None  # None: the router can't tell, so the answer goes through RAG
+    confidence: float = 1.0
+    spans: dict[str, str] = field(default_factory=dict)  # e.g. {"PRODUCTO": "aceite", "MARCA": "Primor"}
 
 
 @dataclass(frozen=True)

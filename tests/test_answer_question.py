@@ -30,7 +30,7 @@ def test_invented_citations_are_dropped(container):
             return Completion(text="Cuesta S/ 1.00 [99]", model="liar")
 
     container.answer_question._llm = LyingLLM()
-    answer = container.answer_question.execute("¿Cuánto cuesta el arroz Costeño?")
+    answer = container.answer_question.execute("¿Cuánto vendí la primera semana de octubre?")
 
     assert answer.citations == []
     assert not answer.grounded

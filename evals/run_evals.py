@@ -21,7 +21,6 @@ from pathlib import Path
 
 from bodeguero.bootstrap import build_container
 from bodeguero.config import get_settings
-from bodeguero.domain.models import Domain
 
 GOLDEN = Path(__file__).with_name("golden.jsonl")
 
@@ -36,9 +35,9 @@ def main() -> None:
         container.ingestion().run()
 
     cases = [json.loads(line) for line in GOLDEN.read_text(encoding="utf-8").splitlines() if line.strip()]
-    hits = rr_sum = contains = grounded = 0
+    hits = rr_sum = contains = grounded = intent_ok = 0
 
-    print(f"{'#':>2}  {'recall':6}  {'fact':4}  {'grnd':4}  question")
+    print(f"{'#':>2}  {'recall':6}  {'fact':4}  {'grnd':4}  {'intent':6}  question")
     for i, case in enumerate(cases, 1):
         q_vec = container.embeddings.embed_query(case["question"])
         results = container.store.search(q_vec, args.k, domain=None)
@@ -51,8 +50,11 @@ def main() -> None:
         has_fact = case["must_contain"].lower() in answer.text.lower()
         contains += has_fact
         grounded += answer.grounded
+        routed = answer.route.intent.value if answer.route and answer.route.intent else "-"
+        intent_ok += routed == case["intent"]
         print(f"{i:>2}  {'yes' if hit else 'NO':6}  {'yes' if has_fact else 'NO':4}  "
-              f"{'yes' if answer.grounded else 'NO':4}  {case['question']}")
+              f"{'yes' if answer.grounded else 'NO':4}  {'yes' if routed == case['intent'] else routed:6}  "
+              f"{case['question']}")
 
     n = len(cases)
     print("\n--- results ---")
@@ -60,14 +62,14 @@ def main() -> None:
     print(f"MRR:               {rr_sum / n:.2f}")
     print(f"answer has fact:   {contains / n:.0%}")
     print(f"grounded answers:  {grounded / n:.0%}")
-    print(f"(llm={container.settings.llm_provider}, embeddings={container.settings.embeddings_provider}, "
-          f"store={container.settings.vector_store})")
+    print(f"intent accuracy:   {intent_ok / n:.0%}")
+    print(f"(router={container.settings.router}, llm={container.settings.llm_provider}, "
+          f"embeddings={container.settings.embeddings_provider}, store={container.settings.vector_store})")
 
     # TODO(yee): add LLM-as-a-judge metrics once a real LLM is plugged in:
     #   - faithfulness: is every claim in the answer supported by the cited chunks?
     #   - answer relevance: does it actually answer the question?
     # Spot-check the judge by hand on a few cases before trusting it.
-    _ = Domain  # domain-level metrics (routing accuracy) are a good next addition
 
 
 if __name__ == "__main__":

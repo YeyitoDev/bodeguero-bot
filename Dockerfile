@@ -11,6 +11,7 @@ COPY src ./src
 RUN pip install --no-cache-dir --no-deps .
 
 COPY data ./data
+COPY modelos ./modelos
 
 RUN useradd --create-home app && chown -R app /app
 USER app

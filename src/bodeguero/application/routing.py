@@ -10,11 +10,22 @@ idea from your interview answer, with its official name.
 
 from __future__ import annotations
 
+import logging
 import re
 import unicodedata
+from dataclasses import replace
 from typing import Protocol
 
-from bodeguero.domain.models import Domain, ModelTier, Route
+from bodeguero.domain.models import Domain, Intent, ModelTier, Route
+
+log = logging.getLogger(__name__)
+
+INTENT_DOMAIN: dict[Intent, Domain] = {
+    Intent.PRICE: Domain.INVENTORY,
+    Intent.STOCK: Domain.INVENTORY,
+    Intent.SALES: Domain.SALES,
+    Intent.ADVICE: Domain.ADVICE,
+}
 
 
 class Router(Protocol):
@@ -32,6 +43,20 @@ _KEYWORDS: dict[Domain, tuple[str, ...]] = {
     Domain.SALES: ("vend", "venta", "ingreso", "ganancia", "caja", "fiado", "mas salio", "semana", "mes pasado"),
     Domain.ADVICE: ("consejo", "como puedo", "deberia", "recomienda", "mejorar", "estrategia", "idea"),
 }
+
+def route_for(intent: Intent, confidence: float, reason: str, spans: dict[str, str] | None = None) -> Route:
+    """The Route a classifier gives once it knows the intent: domain filter and model size follow from it."""
+    return Route(
+        domain=INTENT_DOMAIN.get(intent, Domain.UNKNOWN),
+        tier=ModelTier.LARGE if intent is Intent.ADVICE else ModelTier.SMALL,
+        reason=reason,
+        intent=intent,
+        confidence=confidence,
+        spans=spans or {},
+    )
+
+
+_PRICE_WORDS = ("precio", "cuesta", "vale", "cuanto esta", "a cuanto", "cobro")
 
 # Words that suggest the question needs reasoning, not just a lookup.
 _COMPLEX_HINTS = ("por que", "deberia", "compar", "estrategia", "recomienda", "analiza", "conviene")
@@ -55,4 +80,38 @@ class KeywordRouter:
         domain = best_domain if best_score > 0 and not tied else Domain.UNKNOWN
         is_complex = any(h in q for h in _COMPLEX_HINTS) or len(re.findall(r"\w+", q)) > 25
         tier = ModelTier.LARGE if is_complex else ModelTier.SMALL
-        return Route(domain=domain, tier=tier, reason=f"keyword scores={ {d.value: s for d, s in scores.items()} }")
+        intent = {
+            Domain.INVENTORY: Intent.PRICE if any(w in q for w in _PRICE_WORDS) else Intent.STOCK,
+            Domain.SALES: Intent.SALES,
+            Domain.ADVICE: Intent.ADVICE,
+        }.get(domain)
+        return Route(
+            domain=domain,
+            tier=tier,
+            intent=intent,
+            reason=f"keyword scores={ {d.value: s for d, s in scores.items()} }",
+        )
+
+
+class FallbackRouter:
+    """Ask the primary router; when it isn't sure, ask the fallback and keep the surer answer.
+
+    The fallback (Jev) only picks the intent, so the primary's spans are kept.
+    If the fallback fails, the primary's answer stands: it is an improvement, not a dependency.
+    """
+
+    def __init__(self, primary: Router, fallback: Router, min_confidence: float) -> None:
+        self._primary = primary
+        self._fallback = fallback
+        self._min_confidence = min_confidence
+
+    def route(self, question: str) -> Route:
+        first = self._primary.route(question)
+        if first.confidence >= self._min_confidence:
+            return first
+        try:
+            second = self._fallback.route(question)
+        except Exception:  # noqa: BLE001 - any failure means "keep the primary"
+            log.warning("fallback router failed; keeping the primary route", exc_info=True)
+            return first
+        return replace(second, spans=first.spans) if second.confidence > first.confidence else first

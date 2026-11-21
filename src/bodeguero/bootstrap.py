@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from pathlib import Path
 
 from bodeguero.adapters.outbound.embeddings.hashing import HashingEmbeddings
 from bodeguero.adapters.outbound.loaders.filesystem import FileSystemSource
@@ -16,7 +17,7 @@ from bodeguero.adapters.outbound.messaging.telegram_client import ConsoleMesseng
 from bodeguero.adapters.outbound.vector_store.in_memory import InMemoryVectorStore
 from bodeguero.application.answer_question import AnswerQuestion
 from bodeguero.application.ingestion import IngestDocuments
-from bodeguero.application.routing import KeywordRouter
+from bodeguero.application.routing import FallbackRouter, KeywordRouter, Router
 from bodeguero.config import Settings
 from bodeguero.ports.embeddings import EmbeddingsPort
 from bodeguero.ports.llm import LLMPort
@@ -76,6 +77,22 @@ def build_store(s: Settings, dimension: int) -> VectorStorePort:
     return InMemoryVectorStore()
 
 
+def build_router(s: Settings) -> Router:
+    router: Router = KeywordRouter()
+    if s.router == "lector":
+        if (Path(s.lector_dir) / "lector.onnx").exists():
+            from bodeguero.adapters.outbound.classifier.lector import LectorRouter
+
+            router = LectorRouter(s.lector_dir)
+        else:
+            log.warning("no lector model in %s: routing with keywords", s.lector_dir)
+    if s.typesafe_api_key:
+        from bodeguero.adapters.outbound.classifier.jev import JevRouter
+
+        router = FallbackRouter(router, JevRouter(s.typesafe_api_key), s.jev_min_confidence)
+    return router
+
+
 def build_messenger(s: Settings) -> MessengerPort:
     if s.telegram_bot_token:
         return TelegramMessenger(s.telegram_bot_token)
@@ -88,7 +105,7 @@ def build_container(s: Settings) -> Container:
     embeddings = build_embeddings(s)
     store = build_store(s, embeddings.dimension)
     answer = AnswerQuestion(
-        router=KeywordRouter(),
+        router=build_router(s),
         embeddings=embeddings,
         store=store,
         llm=llm,
