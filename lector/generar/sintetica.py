@@ -7,6 +7,9 @@ plantillas que el entrenamiento nunca ve, para medir si generaliza a un
 catálogo distinto del de los ejemplos.
 
     python sintetica.py            # semilla 7
+
+Además suma las frases escritas a mano de datos/manual.tsv (origen «manual»):
+dos de cada tres al entrenamiento y una a la prueba.
 """
 from __future__ import annotations
 
@@ -234,6 +237,28 @@ def generar(n: int, intenciones_peso: dict, plantillas: dict, marcas: set[str], 
     return filas
 
 
+def manuales() -> list[dict]:
+    """Las frases escritas a mano de datos/manual.tsv, con sus tramos pasados a caracteres."""
+    filas = []
+    with open(os.path.join(DATOS, 'manual.tsv'), encoding='utf-8') as fh:
+        for linea in fh:
+            if not linea.strip() or linea.startswith('#'):
+                continue
+            intencion, marcado, *trato = linea.rstrip('\n').split('\t')
+            texto, tramos, k = '', [], 0
+            for m in re.finditer(r'\[([^\]]+)\]([A-Z]+)', marcado):
+                texto += marcado[k:m.start()]
+                tramos.append({'inicio': len(texto), 'fin': len(texto) + len(m.group(1)), 'etiqueta': m.group(2)})
+                texto += m.group(1)
+                k = m.end()
+            texto += marcado[k:]
+            f = {'texto': texto, 'intencion': intencion, 'banderas': {'usted': trato == ['u']}, 'tramos': tramos,
+                 'id': f'man-{len(filas) + 1:03d}', 'origen': 'manual'}
+            validar(f)
+            filas.append(f)
+    return filas
+
+
 def main(semilla: int = 7) -> None:
     rng = random.Random(semilla)
     todas = sorted({m for p in PRODUCTOS for m in p[3]})
@@ -247,6 +272,11 @@ def main(semilla: int = 7) -> None:
     val = [f for f in generar(500, peso, ent_plant, marcas_ent, rng, 'val') if f['texto'].lower() not in vistos][:400]
     vistos |= {f['texto'].lower() for f in val}
     pru = [f for f in generar(800, peso, PLANTILLAS, set(todas), rng, 'pru') if f['texto'].lower() not in vistos][:600]
+
+    # Una de cada tres frases escritas a mano sólo va a la prueba: mide lo que las plantillas no cubren.
+    man = manuales()
+    ent += [f for i, f in enumerate(man) if i % 3 != 2]
+    pru += [f for i, f in enumerate(man) if i % 3 == 2]
 
     os.makedirs(DATOS, exist_ok=True)
     for nombre, filas in (('entrenamiento', ent), ('validacion', val), ('prueba', pru)):

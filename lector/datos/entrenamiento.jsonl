@@ -3998,3 +3998,70 @@
 {"texto": "ya, cómo hago para que no se me venzan las sales? pe", "intencion": "consejo", "banderas": {"usted": false}, "tramos": [{"inicio": 43, "fin": 48, "etiqueta": "PRODUCTO"}], "id": "ent-03998", "origen": "sintetica"}
 {"texto": "oe cada cuánto cobro el fiado? porfa", "intencion": "consejo", "banderas": {"usted": false}, "tramos": [], "id": "ent-03999", "origen": "sintetica"}
 {"texto": "¿me podria decir cuanto stock tengo de los caramelos de bolsa Halls?", "intencion": "stock", "banderas": {"usted": true}, "tramos": [{"inicio": 43, "fin": 52, "etiqueta": "PRODUCTO"}, {"inicio": 56, "fin": 61, "etiqueta": "MEDIDA"}, {"inicio": 62, "fin": 67, "etiqueta": "MARCA"}], "id": "ent-04000", "origen": "sintetica"}
+{"texto": "cuanto esta el arroz costeño", "intencion": "precio", "banderas": {"usted": false}, "tramos": [{"inicio": 15, "fin": 20, "etiqueta": "PRODUCTO"}, {"inicio": 21, "fin": 28, "etiqueta": "MARCA"}], "id": "man-001", "origen": "manual"}
+{"texto": "a como sale la inca de medio litro", "intencion": "precio", "banderas": {"usted": false}, "tramos": [{"inicio": 15, "fin": 19, "etiqueta": "MARCA"}, {"inicio": 23, "fin": 34, "etiqueta": "MEDIDA"}], "id": "man-002", "origen": "manual"}
+{"texto": "oe cuanto le cobro a la vecina x media docena de huevos", "intencion": "precio", "banderas": {"usted": false}, "tramos": [{"inicio": 33, "fin": 45, "etiqueta": "CANTIDAD"}, {"inicio": 49, "fin": 55, "etiqueta": "PRODUCTO"}], "id": "man-004", "origen": "manual"}
+{"texto": "precio pilsen 630 porfa", "intencion": "precio", "banderas": {"usted": false}, "tramos": [{"inicio": 7, "fin": 13, "etiqueta": "MARCA"}, {"inicio": 14, "fin": 17, "etiqueta": "MEDIDA"}], "id": "man-005", "origen": "manual"}
+{"texto": "a cuanto tengo las galletas soda field", "intencion": "precio", "banderas": {"usted": false}, "tramos": [{"inicio": 19, "fin": 27, "etiqueta": "PRODUCTO"}, {"inicio": 28, "fin": 38, "etiqueta": "MARCA"}], "id": "man-007", "origen": "manual"}
+{"texto": "cuanto cuesta un pan", "intencion": "precio", "banderas": {"usted": false}, "tramos": [{"inicio": 17, "fin": 20, "etiqueta": "PRODUCTO"}], "id": "man-008", "origen": "manual"}
+{"texto": "me dices el precio del atun florida", "intencion": "precio", "banderas": {"usted": false}, "tramos": [{"inicio": 23, "fin": 27, "etiqueta": "PRODUCTO"}, {"inicio": 28, "fin": 35, "etiqueta": "MARCA"}], "id": "man-010", "origen": "manual"}
+{"texto": "cuanto es la coca cola gordita", "intencion": "precio", "banderas": {"usted": false}, "tramos": [{"inicio": 13, "fin": 22, "etiqueta": "MARCA"}, {"inicio": 23, "fin": 30, "etiqueta": "MEDIDA"}], "id": "man-011", "origen": "manual"}
+{"texto": "cuanto sale 3 inca kola de litro y medio", "intencion": "precio", "banderas": {"usted": false}, "tramos": [{"inicio": 12, "fin": 13, "etiqueta": "CANTIDAD"}, {"inicio": 14, "fin": 23, "etiqueta": "MARCA"}, {"inicio": 27, "fin": 40, "etiqueta": "MEDIDA"}], "id": "man-013", "origen": "manual"}
+{"texto": "k precio tiene el papel elite", "intencion": "precio", "banderas": {"usted": false}, "tramos": [{"inicio": 18, "fin": 23, "etiqueta": "PRODUCTO"}, {"inicio": 24, "fin": 29, "etiqueta": "MARCA"}], "id": "man-014", "origen": "manual"}
+{"texto": "cuanto cobro x el agua san luis chica", "intencion": "precio", "banderas": {"usted": false}, "tramos": [{"inicio": 18, "fin": 22, "etiqueta": "PRODUCTO"}, {"inicio": 23, "fin": 31, "etiqueta": "MARCA"}, {"inicio": 32, "fin": 37, "etiqueta": "MEDIDA"}], "id": "man-016", "origen": "manual"}
+{"texto": "a cuanto el kilo de arroz", "intencion": "precio", "banderas": {"usted": false}, "tramos": [{"inicio": 12, "fin": 16, "etiqueta": "MEDIDA"}, {"inicio": 20, "fin": 25, "etiqueta": "PRODUCTO"}], "id": "man-017", "origen": "manual"}
+{"texto": "precio de los fideos don vittorio", "intencion": "precio", "banderas": {"usted": false}, "tramos": [{"inicio": 14, "fin": 20, "etiqueta": "PRODUCTO"}, {"inicio": 21, "fin": 33, "etiqueta": "MARCA"}], "id": "man-019", "origen": "manual"}
+{"texto": "q precio le pongo al yogurt gloria de fresa", "intencion": "precio", "banderas": {"usted": false}, "tramos": [{"inicio": 21, "fin": 27, "etiqueta": "PRODUCTO"}, {"inicio": 28, "fin": 34, "etiqueta": "MARCA"}, {"inicio": 35, "fin": 43, "etiqueta": "MEDIDA"}], "id": "man-020", "origen": "manual"}
+{"texto": "cuanto cuesta la mantequilla", "intencion": "precio", "banderas": {"usted": false}, "tramos": [{"inicio": 17, "fin": 28, "etiqueta": "PRODUCTO"}], "id": "man-022", "origen": "manual"}
+{"texto": "a cuánto dejo los cigarros sueltos", "intencion": "precio", "banderas": {"usted": false}, "tramos": [{"inicio": 18, "fin": 26, "etiqueta": "PRODUCTO"}, {"inicio": 27, "fin": 34, "etiqueta": "MEDIDA"}], "id": "man-023", "origen": "manual"}
+{"texto": "cuanto estan las pilas AA", "intencion": "precio", "banderas": {"usted": false}, "tramos": [{"inicio": 17, "fin": 22, "etiqueta": "PRODUCTO"}, {"inicio": 23, "fin": 25, "etiqueta": "MEDIDA"}], "id": "man-025", "origen": "manual"}
+{"texto": "tengo huevos todavia?", "intencion": "stock", "banderas": {"usted": false}, "tramos": [{"inicio": 6, "fin": 12, "etiqueta": "PRODUCTO"}], "id": "man-026", "origen": "manual"}
+{"texto": "se me acabo el aceite?", "intencion": "stock", "banderas": {"usted": false}, "tramos": [{"inicio": 15, "fin": 21, "etiqueta": "PRODUCTO"}], "id": "man-028", "origen": "manual"}
+{"texto": "hay inca de litro y medio?", "intencion": "stock", "banderas": {"usted": false}, "tramos": [{"inicio": 4, "fin": 8, "etiqueta": "MARCA"}, {"inicio": 12, "fin": 25, "etiqueta": "MEDIDA"}], "id": "man-029", "origen": "manual"}
+{"texto": "ya no tengo leche gloria?", "intencion": "stock", "banderas": {"usted": false}, "tramos": [{"inicio": 12, "fin": 17, "etiqueta": "PRODUCTO"}, {"inicio": 18, "fin": 24, "etiqueta": "MARCA"}], "id": "man-031", "origen": "manual"}
+{"texto": "cuantos tarros de leche hay", "intencion": "stock", "banderas": {"usted": false}, "tramos": [{"inicio": 8, "fin": 14, "etiqueta": "MEDIDA"}, {"inicio": 18, "fin": 23, "etiqueta": "PRODUCTO"}], "id": "man-032", "origen": "manual"}
+{"texto": "tengo que pedir mas coca cola?", "intencion": "stock", "banderas": {"usted": false}, "tramos": [{"inicio": 20, "fin": 29, "etiqueta": "MARCA"}], "id": "man-034", "origen": "manual"}
+{"texto": "me alcanzan las galletas hasta el lunes", "intencion": "stock", "banderas": {"usted": false}, "tramos": [{"inicio": 16, "fin": 24, "etiqueta": "PRODUCTO"}], "id": "man-035", "origen": "manual"}
+{"texto": "cuántas bolsas de azucar tengo", "intencion": "stock", "banderas": {"usted": false}, "tramos": [{"inicio": 18, "fin": 24, "etiqueta": "PRODUCTO"}], "id": "man-037", "origen": "manual"}
+{"texto": "revisame si hay atun", "intencion": "stock", "banderas": {"usted": false}, "tramos": [{"inicio": 16, "fin": 20, "etiqueta": "PRODUCTO"}], "id": "man-038", "origen": "manual"}
+{"texto": "queda agua cielo grande?", "intencion": "stock", "banderas": {"usted": false}, "tramos": [{"inicio": 6, "fin": 10, "etiqueta": "PRODUCTO"}, {"inicio": 11, "fin": 16, "etiqueta": "MARCA"}, {"inicio": 17, "fin": 23, "etiqueta": "MEDIDA"}], "id": "man-040", "origen": "manual"}
+{"texto": "me quedan fideos molitalia", "intencion": "stock", "banderas": {"usted": false}, "tramos": [{"inicio": 10, "fin": 16, "etiqueta": "PRODUCTO"}, {"inicio": 17, "fin": 26, "etiqueta": "MARCA"}], "id": "man-041", "origen": "manual"}
+{"texto": "tengo papel higienico?", "intencion": "stock", "banderas": {"usted": false}, "tramos": [{"inicio": 6, "fin": 21, "etiqueta": "PRODUCTO"}], "id": "man-043", "origen": "manual"}
+{"texto": "hay velas", "intencion": "stock", "banderas": {"usted": false}, "tramos": [{"inicio": 4, "fin": 9, "etiqueta": "PRODUCTO"}], "id": "man-044", "origen": "manual"}
+{"texto": "cuantos huevos quedan en la bandeja", "intencion": "stock", "banderas": {"usted": false}, "tramos": [{"inicio": 8, "fin": 14, "etiqueta": "PRODUCTO"}], "id": "man-046", "origen": "manual"}
+{"texto": "se termino la mantequilla laive?", "intencion": "stock", "banderas": {"usted": false}, "tramos": [{"inicio": 14, "fin": 25, "etiqueta": "PRODUCTO"}, {"inicio": 26, "fin": 31, "etiqueta": "MARCA"}], "id": "man-047", "origen": "manual"}
+{"texto": "como me fue el finde", "intencion": "ventas", "banderas": {"usted": false}, "tramos": [{"inicio": 12, "fin": 20, "etiqueta": "PERIODO"}], "id": "man-049", "origen": "manual"}
+{"texto": "que es lo que mas sale", "intencion": "ventas", "banderas": {"usted": false}, "tramos": [], "id": "man-050", "origen": "manual"}
+{"texto": "cuanto me deben de fiado", "intencion": "ventas", "banderas": {"usted": false}, "tramos": [], "id": "man-052", "origen": "manual"}
+{"texto": "quien me debe mas", "intencion": "ventas", "banderas": {"usted": false}, "tramos": [], "id": "man-053", "origen": "manual"}
+{"texto": "cuanto gane la semana pasada", "intencion": "ventas", "banderas": {"usted": false}, "tramos": [{"inicio": 12, "fin": 28, "etiqueta": "PERIODO"}], "id": "man-055", "origen": "manual"}
+{"texto": "cual fue el dia que mas vendi esta semana", "intencion": "ventas", "banderas": {"usted": false}, "tramos": [{"inicio": 30, "fin": 41, "etiqueta": "PERIODO"}], "id": "man-056", "origen": "manual"}
+{"texto": "cuanto entro a caja en la mañana", "intencion": "ventas", "banderas": {"usted": false}, "tramos": [{"inicio": 20, "fin": 32, "etiqueta": "PERIODO"}], "id": "man-058", "origen": "manual"}
+{"texto": "cuanto gaste en mercaderia este mes", "intencion": "ventas", "banderas": {"usted": false}, "tramos": [{"inicio": 27, "fin": 35, "etiqueta": "PERIODO"}], "id": "man-059", "origen": "manual"}
+{"texto": "cuanta plata hice el domingo", "intencion": "ventas", "banderas": {"usted": false}, "tramos": [{"inicio": 18, "fin": 28, "etiqueta": "PERIODO"}], "id": "man-061", "origen": "manual"}
+{"texto": "cuanto fiado di esta quincena", "intencion": "ventas", "banderas": {"usted": false}, "tramos": [{"inicio": 16, "fin": 29, "etiqueta": "PERIODO"}], "id": "man-062", "origen": "manual"}
+{"texto": "me puede decir el total de ventas de octubre", "intencion": "ventas", "banderas": {"usted": true}, "tramos": [{"inicio": 34, "fin": 44, "etiqueta": "PERIODO"}], "id": "man-064", "origen": "manual"}
+{"texto": "cuanto vendi de pan en las mañanas", "intencion": "ventas", "banderas": {"usted": false}, "tramos": [{"inicio": 16, "fin": 19, "etiqueta": "PRODUCTO"}, {"inicio": 20, "fin": 34, "etiqueta": "PERIODO"}], "id": "man-065", "origen": "manual"}
+{"texto": "le fio a la señora nueva?", "intencion": "consejo", "banderas": {"usted": false}, "tramos": [], "id": "man-067", "origen": "manual"}
+{"texto": "hasta cuanto le puedo fiar a un cliente", "intencion": "consejo", "banderas": {"usted": false}, "tramos": [], "id": "man-068", "origen": "manual"}
+{"texto": "conviene poner yape", "intencion": "consejo", "banderas": {"usted": false}, "tramos": [], "id": "man-070", "origen": "manual"}
+{"texto": "donde pongo las gaseosas pa que se vendan", "intencion": "consejo", "banderas": {"usted": false}, "tramos": [{"inicio": 16, "fin": 24, "etiqueta": "PRODUCTO"}], "id": "man-071", "origen": "manual"}
+{"texto": "que combos puedo hacer pal desayuno", "intencion": "consejo", "banderas": {"usted": false}, "tramos": [], "id": "man-073", "origen": "manual"}
+{"texto": "deberia subir el precio del aceite", "intencion": "consejo", "banderas": {"usted": false}, "tramos": [{"inicio": 28, "fin": 34, "etiqueta": "PRODUCTO"}], "id": "man-074", "origen": "manual"}
+{"texto": "un vecino no me paga el fiado que hago", "intencion": "consejo", "banderas": {"usted": false}, "tramos": [], "id": "man-076", "origen": "manual"}
+{"texto": "como acomodo mejor la tienda", "intencion": "consejo", "banderas": {"usted": false}, "tramos": [], "id": "man-077", "origen": "manual"}
+{"texto": "vale la pena vender helados", "intencion": "consejo", "banderas": {"usted": false}, "tramos": [{"inicio": 20, "fin": 27, "etiqueta": "PRODUCTO"}], "id": "man-079", "origen": "manual"}
+{"texto": "cómo atraigo mas clientes al barrio", "intencion": "consejo", "banderas": {"usted": false}, "tramos": [], "id": "man-080", "origen": "manual"}
+{"texto": "buenas tardes", "intencion": "saludo", "banderas": {"usted": false}, "tramos": [], "id": "man-082", "origen": "manual"}
+{"texto": "oe bot", "intencion": "saludo", "banderas": {"usted": false}, "tramos": [], "id": "man-083", "origen": "manual"}
+{"texto": "buenos dias señor", "intencion": "saludo", "banderas": {"usted": true}, "tramos": [], "id": "man-085", "origen": "manual"}
+{"texto": "aló, funciona esto?", "intencion": "saludo", "banderas": {"usted": false}, "tramos": [], "id": "man-086", "origen": "manual"}
+{"texto": "gracias causa", "intencion": "cortesia", "banderas": {"usted": false}, "tramos": [], "id": "man-088", "origen": "manual"}
+{"texto": "ya listo", "intencion": "cortesia", "banderas": {"usted": false}, "tramos": [], "id": "man-089", "origen": "manual"}
+{"texto": "chau gracias", "intencion": "cortesia", "banderas": {"usted": false}, "tramos": [], "id": "man-091", "origen": "manual"}
+{"texto": "muchas gracias, muy amable", "intencion": "cortesia", "banderas": {"usted": true}, "tramos": [], "id": "man-092", "origen": "manual"}
+{"texto": "cuanto esta el dolar hoy", "intencion": "fuera", "banderas": {"usted": false}, "tramos": [], "id": "man-094", "origen": "manual"}
+{"texto": "quien juega hoy", "intencion": "fuera", "banderas": {"usted": false}, "tramos": [], "id": "man-095", "origen": "manual"}
+{"texto": "que dia es hoy", "intencion": "fuera", "banderas": {"usted": false}, "tramos": [], "id": "man-097", "origen": "manual"}
+{"texto": "como hago un pollo a la brasa", "intencion": "fuera", "banderas": {"usted": false}, "tramos": [], "id": "man-098", "origen": "manual"}
+{"texto": "cual es el mejor celular", "intencion": "fuera", "banderas": {"usted": false}, "tramos": [], "id": "man-100", "origen": "manual"}

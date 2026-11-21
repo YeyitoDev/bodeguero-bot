@@ -90,6 +90,7 @@ It runs in a separate **worker** process, so heavy ingestion never slows the cha
 
 ```bash
 make install                      # creates .venv, installs deps
+make lector                       # downloads the classifier weights (64 MB, sha256-checked)
 make test                         # 21 tests, all offline
 cp .env.example .env              # then set VECTOR_STORE=memory in .env
 make run                          # http://localhost:8000/docs
@@ -156,12 +157,13 @@ advice questions are filtered to the right domain (they used to be routed to `ve
 A copy of restaurant-system's lector (DistilBERT in Spanish, int8 ONNX, ~4 ms per question on CPU), retrained
 on synthetic bodega questions. It returns the intent (`precio`, `stock`, `ventas`, `consejo`, `saludo`,
 `cortesia`, `fuera`) and the spans (`PRODUCTO`, `MARCA`, `MEDIDA`, `CANTIDAD`, `PERIODO`). On its held-out test
-set (brands and templates it never saw): intent 96%, span F1 0.96. When its confidence is below
+set (brands and templates it never saw): intent 96%, span F1 0.97. On 33 handwritten questions outside the
+templates (`lector/datos/manual.tsv`, written by hand, not real users): intent 91%, exact spans 79%. When its confidence is below
 `JEV_MIN_CONFIDENCE`, Jev (TypeSafe) picks the intent instead, if `TYPESAFE_API_KEY` is set.
 
 ```bash
 python3 lector/generar/sintetica.py                          # data -> lector/datos
-LECTOR_TMP=/private/tmp/lector-bodega lector/entrenar/reentrenar.sh   # ~7 min -> modelos/lector
+REPETIR_HUMANAS=3 LECTOR_TMP=/private/tmp/lector-bodega lector/entrenar/reentrenar.sh  # ~7 min
 ```
 
 **Record every change here, with before/after numbers.**

@@ -1,0 +1,103 @@
+# Preguntas escritas a mano al estilo de un bodeguero (NO son de usuarios reales).
+# intención <TAB> frase con los tramos marcados como [texto]ETIQUETA <TAB> u si trata de usted
+# Etiquetas: PRODUCTO MARCA MEDIDA CANTIDAD PERIODO. Una de cada tres filas va a la prueba.
+precio	cuanto esta el [arroz]PRODUCTO [costeño]MARCA
+precio	a como sale la [inca]MARCA de [medio litro]MEDIDA
+precio	ya subio el [aceite]PRODUCTO?
+precio	oe cuanto le cobro a la vecina x [media docena]CANTIDAD de [huevos]PRODUCTO
+precio	precio [pilsen]MARCA [630]MEDIDA porfa
+precio	cuanto vale el [tarro]MEDIDA de [gloria]MARCA
+precio	a cuanto tengo las [galletas]PRODUCTO [soda field]MARCA
+precio	cuanto cuesta un [pan]PRODUCTO
+precio	el [azucar]PRODUCTO [rubia]MEDIDA a cuanto la tengo
+precio	me dices el precio del [atun]PRODUCTO [florida]MARCA
+precio	cuanto es la [coca cola]MARCA [gordita]MEDIDA
+precio	a cuanto vendo el [detergente]PRODUCTO [opal]MARCA de [medio kilo]MEDIDA
+precio	cuanto sale [3]CANTIDAD [inca kola]MARCA de [litro y medio]MEDIDA
+precio	k precio tiene el [papel]PRODUCTO [elite]MARCA
+precio	el [balon de gas]PRODUCTO cuanto ta
+precio	cuanto cobro x el [agua]PRODUCTO [san luis]MARCA [chica]MEDIDA
+precio	a cuanto el [kilo]MEDIDA de [arroz]PRODUCTO
+precio	cuánto le pongo a la [cerveza]PRODUCTO [cristal]MARCA [en lata]MEDIDA
+precio	precio de los [fideos]PRODUCTO [don vittorio]MARCA
+precio	q precio le pongo al [yogurt]PRODUCTO [gloria]MARCA [de fresa]MEDIDA
+precio	me podria decir a cuanto esta el [aceite]PRODUCTO [primor]MARCA	u
+precio	cuanto cuesta la [mantequilla]PRODUCTO
+precio	a cuánto dejo los [cigarros]PRODUCTO [sueltos]MEDIDA
+precio	la [sprite]MARCA [personal]MEDIDA cuanto
+precio	cuanto estan las [pilas]PRODUCTO [AA]MEDIDA
+stock	tengo [huevos]PRODUCTO todavia?
+stock	cuantas [pilsen]MARCA me quedan en la refri
+stock	se me acabo el [aceite]PRODUCTO?
+stock	hay [inca]MARCA de [litro y medio]MEDIDA?
+stock	cuanto [arroz]PRODUCTO me queda
+stock	ya no tengo [leche]PRODUCTO [gloria]MARCA?
+stock	cuantos [tarros]MEDIDA de [leche]PRODUCTO hay
+stock	queda [gas]PRODUCTO?
+stock	tengo que pedir mas [coca cola]MARCA?
+stock	me alcanzan las [galletas]PRODUCTO hasta el lunes
+stock	hay [pan]PRODUCTO [frances]MEDIDA o ya se termino
+stock	cuántas bolsas de [azucar]PRODUCTO tengo
+stock	revisame si hay [atun]PRODUCTO
+stock	stock [cerveza]PRODUCTO
+stock	queda [agua]PRODUCTO [cielo]MARCA [grande]MEDIDA?
+stock	me quedan [fideos]PRODUCTO [molitalia]MARCA
+stock	cuanto [detergente]PRODUCTO tengo en el almacen
+stock	tengo [papel higienico]PRODUCTO?
+stock	hay [velas]PRODUCTO
+stock	sabe si me queda [cerveza]PRODUCTO [cusqueña]MARCA	u
+stock	cuantos [huevos]PRODUCTO quedan en la bandeja
+stock	se termino la [mantequilla]PRODUCTO [laive]MARCA?
+ventas	cuanto vendi [hoy]PERIODO
+ventas	como me fue [el finde]PERIODO
+ventas	que es lo que mas sale
+ventas	cuanto saque [ayer]PERIODO
+ventas	cuanto me deben de fiado
+ventas	quien me debe mas
+ventas	cuanto vendi de [cerveza]PRODUCTO [el sabado]PERIODO
+ventas	cuanto gane [la semana pasada]PERIODO
+ventas	cual fue el dia que mas vendi [esta semana]PERIODO
+ventas	cuantas [inca kola]MARCA vendi [en octubre]PERIODO
+ventas	cuanto entro a caja [en la mañana]PERIODO
+ventas	cuanto gaste en mercaderia [este mes]PERIODO
+ventas	vendi mas que [la semana pasada]PERIODO?
+ventas	cuanta plata hice [el domingo]PERIODO
+ventas	cuanto fiado di [esta quincena]PERIODO
+ventas	que producto se vende menos
+ventas	me puede decir el total de ventas [de octubre]PERIODO	u
+ventas	cuanto vendi de [pan]PRODUCTO [en las mañanas]PERIODO
+consejo	como hago para vender mas
+consejo	le fio a la señora nueva?
+consejo	hasta cuanto le puedo fiar a un cliente
+consejo	cada cuanto cobro lo fiado
+consejo	conviene poner yape
+consejo	donde pongo las [gaseosas]PRODUCTO pa que se vendan
+consejo	que hago con la [leche]PRODUCTO que ya va a vencer
+consejo	que combos puedo hacer pal desayuno
+consejo	deberia subir el precio del [aceite]PRODUCTO
+consejo	como hago para que no me roben
+consejo	un vecino no me paga el fiado que hago
+consejo	como acomodo mejor la tienda
+consejo	que me recomienda para el verano	u
+consejo	vale la pena vender [helados]PRODUCTO
+consejo	cómo atraigo mas clientes al barrio
+saludo	hola
+saludo	buenas tardes
+saludo	oe bot
+saludo	hola que tal, me ayudas?
+saludo	buenos dias señor	u
+saludo	aló, funciona esto?
+saludo	hola causita
+cortesia	gracias causa
+cortesia	ya listo
+cortesia	ok bacan
+cortesia	chau gracias
+cortesia	muchas gracias, muy amable	u
+cortesia	ya entendi
+fuera	cuanto esta el dolar hoy
+fuera	quien juega hoy
+fuera	cuentame un chiste
+fuera	que dia es hoy
+fuera	como hago un pollo a la brasa
+fuera	pon salsa
+fuera	cual es el mejor celular

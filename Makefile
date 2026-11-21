@@ -1,4 +1,4 @@
-.PHONY: install up down ingest run test lint evals
+.PHONY: install up down ingest run test lint evals lector
 
 # psycopg-binary 3.2.3 ships no wheels for Python 3.14
 PYTHON ?= python3.13
@@ -6,7 +6,15 @@ PYTHON ?= python3.13
 install:            ## local venv setup
 	$(PYTHON) -m venv .venv && .venv/bin/pip install -r requirements-dev.txt && .venv/bin/pip install -e .
 
-up:                 ## start Postgres + worker (ingestion) + API
+LECTOR_URL ?= https://github.com/YeyitoDev/bodeguero-bot/releases/download/lector-v1/lector.onnx
+
+lector: modelos/lector/lector.onnx   ## download the lector weights (GitHub release)
+
+modelos/lector/lector.onnx:
+	curl -fL -o $@.tmp $(LECTOR_URL)
+	cd modelos/lector && mv lector.onnx.tmp lector.onnx && shasum -a 256 -c lector.onnx.sha256 || { rm -f lector.onnx; exit 1; }
+
+up: modelos/lector/lector.onnx   ## start Postgres + worker (ingestion) + API
 	docker compose up --build
 
 down:
