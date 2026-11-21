@@ -1,7 +1,10 @@
 .PHONY: install up down ingest run test lint evals
 
+# psycopg-binary 3.2.3 ships no wheels for Python 3.14
+PYTHON ?= python3.13
+
 install:            ## local venv setup
-	python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt && .venv/bin/pip install -e .
+	$(PYTHON) -m venv .venv && .venv/bin/pip install -r requirements-dev.txt && .venv/bin/pip install -e .
 
 up:                 ## start Postgres + worker (ingestion) + API
 	docker compose up --build
