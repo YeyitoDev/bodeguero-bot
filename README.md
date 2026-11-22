@@ -1,12 +1,15 @@
 # Bodeguero Bot
 
-A Telegram assistant for Peruvian *bodegueros* (small shop owners). It answers questions about their catalogue, stock, sales and business rules using **Retrieval-Augmented Generation (RAG)**, and every answer cites its source.
+A Telegram assistant for Peruvian *bodegueros* (small shop owners). It answers questions about their catalogue, stock, sales and business rules. A small local classifier (the **lector**) reads each question in ~4 ms; price, stock and inventory questions are answered straight from the catalogue, and only sales and advice questions go through **Retrieval-Augmented Generation (RAG)** with verified citations.
 
-> "¿Cuánto cuesta el aceite Primor?" → "Aceite Primor 900 ml: precio de venta S/ 9.90. Stock actual: 10 botellas. [1]" — *Fuentes: [1] catalogo/abarrotes.md*
+> "Stock de gaseosas" →
+> **Inca Kola 500 ml**: te quedan 36 unidades · **Coca-Cola 500 ml**: te quedan 24 unidades · **Inca Kola 1.5 litros**: te quedan 12 unidades
+
+Live at [t.me/BodegueroIsBot](https://t.me/BodegueroIsBot), deployed on Fly.io.
 
 Built with **hexagonal architecture (ports & adapters)**: the LLM provider, the embedding model, the vector store and the chat channel are all swappable without touching the core logic.
 
-**Stack:** Python 3.11+ · FastAPI · Postgres + pgvector · Telegram Bot API · Docker Compose · pytest
+**Stack:** Python 3.13 · FastAPI · LangGraph · DistilBERT (int8 ONNX, onnxruntime) · Postgres + pgvector · Telegram Bot API · Docker · Fly.io · GitHub Actions · pytest
 
 ---
 
@@ -21,8 +24,9 @@ flowchart LR
     end
 
     subgraph CORE["Application core (no frameworks)"]
-        AQ["AnswerQuestion<br/>orchestrator"]
-        RT["Router<br/>domain + model tier"]
+        AQ["AnswerQuestion<br/>LangGraph orchestrator"]
+        RT["Router<br/>intent + spans"]
+        CAT["Catalogue tool<br/>price · stock · inventory"]
         PR["Grounded prompt<br/>+ citation check"]
         IG["IngestDocuments<br/>chunk → embed → upsert"]
     end
@@ -36,6 +40,7 @@ flowchart LR
     end
 
     subgraph OUT["Outbound adapters"]
+        CLS["Lector (ONNX) · Jev fallback · keywords"]
         LLM["Fake · OpenAI · Anthropic"]
         EMB["Hashing · OpenAI"]
         VS["pgvector · in-memory"]
@@ -47,7 +52,9 @@ flowchart LR
     API --> AQ
     WK --> IG
     AQ --> RT
+    AQ --> CAT
     AQ --> PR
+    RT -.-> CLS
     AQ --> LP & EP & VP
     TG --> MP
     IG --> DP & EP & VP
@@ -62,19 +69,20 @@ Dependencies point **inward**. The core only knows the ports. `bootstrap.py` is 
 
 ### Online path (a user asks a question)
 
+```
+question ─► route ─┬─ precio / stock / inventario ─► catalog ─► template answer (no LLM)
+  (lector,         ├─ ventas / consejo ───────────► rag ─────► retrieve ─► grounded prompt ─► LLM ─► citation check
+   Jev if unsure)  └─ saludo / cortesia / fuera ──► fixed ───► canned answer
+```
+
 | # | Step | Where |
 |---|------|-------|
-| 1 | Telegram calls the webhook. Secret header and JSON schema are validated. Returns 200 immediately. | `adapters/inbound/telegram_webhook.py` |
-| 2 | **Route**: pick a domain (`inventario` / `ventas` / `consejos`) and a model tier (small / large). | `application/routing.py` |
-| 3 | **Embed** the question with the same model used at ingestion. | `EmbeddingsPort` |
-| 4 | **Retrieve** top-k chunks, filtered by domain metadata. If nothing relevant is found, retry across all domains. | `VectorStorePort` |
-| 5 | No relevant context → answer "No tengo esa información" **without calling the LLM**. | `application/answer_question.py` |
-| 6 | **Build a grounded prompt**: numbered chunks, "answer only from context, cite [n]". | `application/prompts.py` |
-| 7 | **Generate** through the LLM port. | `LLMPort` |
-| 8 | **Check the output**: keep only citations that point to real chunks. | `application/answer_question.py` |
-| 9 | Reply through the messenger port, with sources. | `MessengerPort` |
-
-Steps 3–5 are the "R" in RAG.
+| 1 | Telegram calls the webhook. Secret header and JSON schema are validated. Returns 200 immediately; the answer runs in a background task. | `adapters/inbound/telegram_webhook.py` |
+| 2 | **Route**: the lector returns the intent (8 classes) and the spans, grouped per product (`PRODUCTO`, `MARCA`, `MEDIDA`, `CANTIDAD`, `PERIODO`). Below `JEV_MIN_CONFIDENCE` (0.8), Jev picks the intent and the lector's spans are kept. | `adapters/outbound/classifier/`, `application/routing.py` |
+| 3 | **Catalog branch**: find the lines for each product named. A category or a brand without size returns every tied line; a brand or size that isn't in the line is never answered with another one (wrong money). Unknown products are named back. | `application/catalog.py` |
+| 4 | **RAG branch**: embed, retrieve top-k filtered by domain (retry across all domains if nothing is relevant). No context → "No tengo esa información" **without calling the LLM**. | `application/answer_question.py` |
+| 5 | **Generate** through the LLM port (small or large model by intent) and keep only citations that point to real chunks. | `LLMPort`, `application/prompts.py` |
+| 6 | Reply in Telegram HTML: names in bold, inventory grouped by section, no citation markers. | `to_html` in `telegram_webhook.py` |
 
 ### Offline path (ingestion)
 
@@ -150,12 +158,13 @@ The pipeline is measured against `evals/golden.jsonl` (real bodeguero questions 
 | **answer has fact** | Does the answer contain the key fact (price, quantity…)? |
 | **grounded** | Does the answer cite at least one real chunk? |
 
-Fake LLM + hashing embeddings + in-memory store, 10 questions:
+Fake LLM + hashing embeddings + in-memory store:
 
-| Router | recall@4 | MRR | answer has fact | grounded | intent accuracy |
-|---|---|---|---|---|---|
-| `keywords` (baseline) | 100% | 1.00 | 80% | 100% | 50% |
-| `lector` (21/11/2026) | 100% | 1.00 | **100%** | 100% | **100%** |
+| Router | questions | recall@4 | MRR | answer has fact | grounded | intent accuracy |
+|---|---|---|---|---|---|---|
+| `keywords` (baseline) | 10 | 100% | 1.00 | 80% | 100% | 50% |
+| `lector` v1 (21/11/2026) | 10 | 100% | 1.00 | **100%** | 100% | **100%** |
+| `lector` v2 (21/11/2026) | 12 | 100% | 0.94 | **100%** | 100% | **100%** |
 
 With the lector, price and stock questions skip the LLM: the catalogue tool answers from the matched line, and
 advice questions are filtered to the right domain (they used to be routed to `ventas`).
@@ -163,11 +172,15 @@ advice questions are filtered to the right domain (they used to be routed to `ve
 ### The lector (question classifier)
 
 A copy of restaurant-system's lector (DistilBERT in Spanish, int8 ONNX, ~4 ms per question on CPU), retrained
-on synthetic bodega questions. It returns the intent (`precio`, `stock`, `ventas`, `consejo`, `saludo`,
-`cortesia`, `fuera`) and the spans (`PRODUCTO`, `MARCA`, `MEDIDA`, `CANTIDAD`, `PERIODO`). On its held-out test
-set (brands and templates it never saw): intent 96%, span F1 0.97. On 33 handwritten questions outside the
-templates (`lector/datos/manual.tsv`, written by hand, not real users): intent 91%, exact spans 79%. When its confidence is below
+on synthetic bodega questions. It returns the intent (`precio`, `stock`, `inventario`, `ventas`, `consejo`,
+`saludo`, `cortesia`, `fuera`) and the spans (`PRODUCTO`, `MARCA`, `MEDIDA`, `CANTIDAD`, `PERIODO`). The weights
+(64 MB) are a GitHub release, checked by sha256 (`make lector`). When its confidence is below
 `JEV_MIN_CONFIDENCE`, Jev (TypeSafe) picks the intent instead, if `TYPESAFE_API_KEY` is set.
+
+| Version | What changed | Synthetic test: intent / span F1 | Handwritten held-out: intent / exact spans |
+|---|---|---|---|
+| v1 | 100 handwritten questions (`lector/datos/manual.tsv`, not real users) | 96% / 0.97 | 91% / 79% (33 phrases) |
+| v2 | `inventario` intent, snacks, short and multi-product questions, first 4 real Telegram questions | 96% / 0.97 | **98% / 86%** (42 phrases) |
 
 ```bash
 python3 lector/generar/sintetica.py                          # data -> lector/datos
@@ -187,6 +200,9 @@ REPETIR_HUMANAS=3 LECTOR_TMP=/private/tmp/lector-bodega lector/entrenar/reentren
 - **Model routing (small vs large).** Most bodeguero questions are lookups ("¿cuánto cuesta…?"). Sending those to a small model and reserving the large one for reasoning questions is the biggest cost lever.
 - **No context → no LLM call.** It's cheaper, and the model can't hallucinate an answer it was never asked to write.
 - **Citations are verified, not trusted.** Citations pointing to chunks that don't exist are dropped, and the answer is marked ungrounded.
+- **A 4 ms classifier before any LLM.** Most questions are lookups. A local DistilBERT (int8 ONNX) reads intent and products for free and offline; the catalogue tool answers them with a template, so prices never come from a generated sentence. An LLM decision model (Jev) only steps in when the lector is unsure.
+- **Weights as a release, not in git.** 64 MB per retrain would bloat the history; the release is free, versioned (`lector-v1`, `lector-v2`) and verified by sha256 in `make lector` and CI.
+- **Real questions feed the next model.** Each version adds the questions people actually typed in Telegram (a DEBUG log line shows intent, spans and answer) and is measured on held-out handwritten phrases, before/after.
 - **Webhook answers asynchronously.** Telegram retries slow webhooks. ACK first, answer in a background task.
 - **Retrieved text is data, not instructions.** The system prompt says so explicitly (prompt-injection defence).
 
@@ -200,13 +216,15 @@ src/bodeguero/
 ├── ports/                        # interfaces the core depends on
 │   ├── llm.py  embeddings.py  vector_store.py  messaging.py  document_source.py
 ├── application/                  # use cases: the core logic
-│   ├── answer_question.py        # online path orchestrator
+│   ├── answer_question.py        # online path orchestrator (LangGraph)
+│   ├── catalog.py                # catalogue tool: price, stock, inventory lines
 │   ├── ingestion.py              # offline path
 │   ├── chunking.py  routing.py  prompts.py
 ├── adapters/
 │   ├── inbound/                  # who calls the core
 │   │   ├── telegram_webhook.py  http_api.py  schemas.py
 │   └── outbound/                 # what the core calls
+│       ├── classifier/           # lector.py (ONNX), jev.py, tokenizador.py
 │       ├── llm/                  # fake.py, openai_llm.py, anthropic_llm.py
 │       ├── embeddings/           # hashing.py, openai_embeddings.py
 │       ├── vector_store/         # pgvector_store.py, in_memory.py
@@ -216,9 +234,12 @@ src/bodeguero/
 ├── config.py                     # settings from env / .env
 ├── main.py                       # FastAPI app
 └── worker.py                     # ingestion worker
+lector/                           # classifier data generator + training (copied from restaurant-system)
+modelos/lector/                   # tokenizer, labels and sha256 (weights come from the GitHub release)
 evals/                            # golden dataset + evaluation runner
 tests/                            # unit, API and pgvector integration tests
 data/                             # sample bodega documents (folder = domain)
+fly.toml  .github/workflows/      # Fly.io deploy + CI (lint, tests, evals; deploy on main)
 ```
 
 ### Suggested reading order
